@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { TALKS, COMING_SOON_TALKS } from "@/lib/talks-config";
+import { TALKS } from "@/lib/talks-config";
 import NetworkCanvas from "@/components/NetworkCanvas";
 import TalkCard from "@/components/ui/TalkCard";
 
@@ -179,32 +179,6 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Coming soon */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {COMING_SOON_TALKS.map((talk) => (
-              <div
-                key={talk.slug}
-                className="glass rounded-3xl overflow-hidden opacity-50 cursor-not-allowed"
-              >
-                <div className={`h-1.5 w-full bg-gradient-to-r ${talk.bgGradient}`} />
-                <div className="p-8 pb-4 flex justify-center">
-                  <Image
-                    src={talk.logo}
-                    alt={talk.label}
-                    width={260}
-                    height={80}
-                    className="h-24 w-auto object-contain"
-                  />
-                </div>
-                <div className="px-6 pb-7 text-center">
-                  <p className="text-slate-500 text-sm mb-3">{talk.description}</p>
-                  <span className="inline-block text-xs font-bold px-3 py-1 rounded-full bg-white/5 text-slate-500 uppercase tracking-widest">
-                    Próximamente
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
