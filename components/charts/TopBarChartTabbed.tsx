@@ -33,22 +33,26 @@ export default function TopBarChartTabbed({ profiles, field, color, title, subti
   }, [profiles]);
 
   const chartData = useMemo(() => {
-    const filtered =
-      activeNetwork === "TODOS"
-        ? profiles
-        : profiles.filter((p) => p.network === activeNetwork);
-
-    return filtered
-      .filter((p) => p[field] > 0)
+    if (activeNetwork === "TODOS") {
+      // Aggregate by brand name across all platforms
+      const map: Record<string, number> = {};
+      for (const p of profiles) {
+        if (p[field] > 0) map[p.profile] = (map[p.profile] || 0) + p[field];
+      }
+      return Object.entries(map)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 10)
+        .map(([name, value]) => ({ name, value, fill: color }));
+    }
+    return profiles
+      .filter((p) => p.network === activeNetwork && p[field] > 0)
       .sort((a, b) => b[field] - a[field])
       .slice(0, 10)
       .map((p) => ({
         name: p.profile,
         value: p[field],
         network: p.network,
-        fill: activeNetwork === "TODOS"
-          ? color
-          : (NETWORK_COLORS[activeNetwork] ?? color),
+        fill: NETWORK_COLORS[activeNetwork] ?? color,
       }));
   }, [profiles, field, activeNetwork, color]);
 
