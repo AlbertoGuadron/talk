@@ -19,7 +19,7 @@ export default function Footer() {
           className="h-12 w-auto opacity-70"
         />
         <p className="text-slate-600 text-sm text-center">
-          © 2026 TALK Digital Insights · Todos los derechos reservados
+          © 2026 TALK by Digital Insights · Todos los derechos reservados
         </p>
         <div className="flex gap-4 text-slate-600 text-sm">
           {/* <Link href="/admin" className="hover:text-slate-400 transition-colors">

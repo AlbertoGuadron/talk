@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Cell,
@@ -38,10 +39,7 @@ const DarkTooltip = ({
   return (
     <div
       className="rounded-xl p-3 text-sm shadow-xl"
-      style={{
-        background: "#0F1A35",
-        border: "1px solid rgba(255,255,255,0.1)",
-      }}
+      style={{ background: "#0F1A35", border: "1px solid rgba(255,255,255,0.1)" }}
     >
       <p className="font-semibold text-white max-w-[200px] leading-tight">{item.payload.name}</p>
       {item.payload.network && (
@@ -53,8 +51,19 @@ const DarkTooltip = ({
 };
 
 export default function TopBarChart({ data, color, formatValue = fmtDefault, title, subtitle }: Props) {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   const rgb = hexToRgb(color);
-  const truncate = (s: string, max = 22) => s.length > max ? s.slice(0, max) + "…" : s;
+  const yAxisWidth = isMobile ? 95 : 140;
+  const maxChars = isMobile ? 13 : 22;
+  const chartHeight = isMobile ? 260 : 320;
+  const truncate = (s: string) => s.length > maxChars ? s.slice(0, maxChars) + "…" : s;
 
   return (
     <div
@@ -65,26 +74,22 @@ export default function TopBarChart({ data, color, formatValue = fmtDefault, tit
         <h3 className="font-bold text-white text-base">{title}</h3>
         {subtitle && <p className="text-slate-500 text-xs mt-0.5">{subtitle}</p>}
       </div>
-      <ResponsiveContainer width="100%" height={320}>
-        <BarChart
-          data={data}
-          layout="vertical"
-          margin={{ top: 0, right: 16, left: 8, bottom: 0 }}
-        >
+      <ResponsiveContainer width="100%" height={chartHeight}>
+        <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, left: 4, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.05)" />
           <XAxis
             type="number"
             tickFormatter={fmtDefault}
-            tick={{ fontSize: 11, fill: "#475569" }}
+            tick={{ fontSize: 10, fill: "#475569" }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
             type="category"
             dataKey="name"
-            width={140}
-            tickFormatter={(v) => truncate(v)}
-            tick={{ fontSize: 11, fill: "#64748B" }}
+            width={yAxisWidth}
+            tickFormatter={truncate}
+            tick={{ fontSize: 10, fill: "#64748B" }}
             axisLine={false}
             tickLine={false}
           />
@@ -92,12 +97,9 @@ export default function TopBarChart({ data, color, formatValue = fmtDefault, tit
             content={<DarkTooltip color={color} fmt={formatValue} />}
             cursor={{ fill: "rgba(255,255,255,0.03)" }}
           />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={20}>
+          <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={18}>
             {data.map((_, idx) => (
-              <Cell
-                key={idx}
-                fill={`rgba(${rgb}, ${1 - idx * 0.07})`}
-              />
+              <Cell key={idx} fill={`rgba(${rgb}, ${1 - idx * 0.07})`} />
             ))}
           </Bar>
         </BarChart>

@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: "TALK by Digital Insights",
-  description: "Rankings de presencia en redes sociales — Foodtalk, Housetalk, Markettalk",
+  description: "La plataforma de real-time market research que analiza tendencias, conversación y comportamiento digital para guiar a tu marca con datos actualizados.",
 };
 
 export default function RootLayout({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { ProfileData, ChartDataPoint } from "@/types";
 import { NETWORK_COLORS } from "@/lib/talks-config";
 import {
@@ -90,8 +90,19 @@ export default function TopBarChartCategoryTabbed({ profiles, field, color, titl
       .map(([name, value]) => ({ name, value, fill: chartColor }));
   }, [profiles, field, activeNetwork, chartColor]);
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   const tabs = ["TODOS", ...networks];
-  const truncate = (s: string, max = 22) => s.length > max ? s.slice(0, max) + "…" : s;
+  const yAxisWidth = isMobile ? 95 : 140;
+  const maxChars = isMobile ? 13 : 22;
+  const chartHeight = isMobile ? 260 : 320;
+  const truncate = (s: string) => s.length > maxChars ? s.slice(0, maxChars) + "…" : s;
 
   return (
     <div
@@ -129,22 +140,22 @@ export default function TopBarChartCategoryTabbed({ profiles, field, color, titl
           <h3 className="font-bold text-white text-base">{title}</h3>
           {subtitle && <p className="text-slate-500 text-xs mt-0.5">{subtitle}</p>}
         </div>
-        <ResponsiveContainer width="100%" height={320}>
-          <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 16, left: 8, bottom: 0 }}>
+        <ResponsiveContainer width="100%" height={chartHeight}>
+          <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 16, left: 4, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.05)" />
             <XAxis
               type="number"
               tickFormatter={fmtDefault}
-              tick={{ fontSize: 11, fill: "#475569" }}
+              tick={{ fontSize: 10, fill: "#475569" }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               type="category"
               dataKey="name"
-              width={140}
-              tickFormatter={(v) => truncate(v)}
-              tick={{ fontSize: 11, fill: "#64748B" }}
+              width={yAxisWidth}
+              tickFormatter={truncate}
+              tick={{ fontSize: 10, fill: "#64748B" }}
               axisLine={false}
               tickLine={false}
             />
@@ -152,7 +163,7 @@ export default function TopBarChartCategoryTabbed({ profiles, field, color, titl
               content={<DarkTooltip color={chartColor} />}
               cursor={{ fill: "rgba(255,255,255,0.03)" }}
             />
-            <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={20}>
+            <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={18}>
               {chartData.map((_, idx) => (
                 <Cell key={idx} fill={`rgba(${rgb}, ${1 - idx * 0.07})`} />
               ))}
