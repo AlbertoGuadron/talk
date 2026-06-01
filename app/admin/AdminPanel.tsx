@@ -24,10 +24,15 @@ export default function AdminPanel({ talks, sheetId, isConfigured, revalidateTok
       });
       if (res.ok) {
         setStatus("success");
-        setMessage("✅ Sitio actualizado correctamente. Los cambios ya son visibles.");
+        setMessage("✅ Caché invalidado. Abre cada Talk y recarga la página para ver los datos nuevos.");
       } else {
+        const body = await res.json().catch(() => ({}));
         setStatus("error");
-        setMessage("❌ Error al actualizar. Verifica la configuración.");
+        setMessage(
+          res.status === 401
+            ? "❌ Token inválido. Verifica que REVALIDATE_TOKEN esté configurado en Vercel."
+            : `❌ Error al actualizar (${res.status}). ${body?.error ?? ""}`
+        );
       }
     } catch {
       setStatus("error");

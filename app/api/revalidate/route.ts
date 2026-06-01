@@ -10,12 +10,17 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    revalidatePath("/foodtalk");
-    revalidatePath("/housetalk");
-    revalidatePath("/markettalk");
-    revalidatePath("/retailtalk");
-    return NextResponse.json({ revalidated: true, at: new Date().toISOString() });
-  } catch {
+    revalidatePath("/foodtalk", "page");
+    revalidatePath("/housetalk", "page");
+    revalidatePath("/markettalk", "page");
+    revalidatePath("/retailtalk", "page");
+    return NextResponse.json({
+      revalidated: true,
+      pages: ["foodtalk", "housetalk", "markettalk", "retailtalk"],
+      at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error("Revalidation error:", err);
     return NextResponse.json({ error: "Revalidation failed" }, { status: 500 });
   }
 }
