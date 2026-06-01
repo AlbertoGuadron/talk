@@ -172,7 +172,20 @@ export function parsePostsData(rows: unknown[][], slug: TalkSlug): PostData[] {
       imageLink: String(row[c.img] || "").trim(),
     });
   }
-  return posts.filter(p => p.engagement > 0).sort((a, b) => b.engagement - a.engagement).slice(0, 30);
+  const withEngagement = posts.filter(p => p.engagement > 0);
+
+  // Take top 50 per platform so all platforms appear in tabs
+  // and each category has enough posts when filtered
+  const byNetwork: Record<string, PostData[]> = {};
+  for (const p of withEngagement) {
+    if (!byNetwork[p.network]) byNetwork[p.network] = [];
+    byNetwork[p.network].push(p);
+  }
+  const result: PostData[] = [];
+  for (const net of Object.keys(byNetwork)) {
+    result.push(...byNetwork[net].sort((a, b) => b.engagement - a.engagement).slice(0, 50));
+  }
+  return result.sort((a, b) => b.engagement - a.engagement);
 }
 
 export function buildDashboardData(
