@@ -49,10 +49,10 @@ function parseConfigRows(rows: unknown[][]): TalkMeta {
 }
 
 const SHEET_TAB: Record<TalkSlug, { datos: string; config: string; publicaciones: string }> = {
-  foodtalk:   { datos: "foodtalk_datos",   config: "foodtalk_config",   publicaciones: "foodtalk_publicaciones" },
-  housetalk:  { datos: "housetalk_datos",  config: "housetalk_config",  publicaciones: "housetalk_publicaciones" },
-  markettalk: { datos: "markettalk_datos", config: "markettalk_config", publicaciones: "markettalk_publicaciones" },
-  retailtalk: { datos: "retailtalk_datos", config: "retailtalk_config", publicaciones: "retailtalk_publicaciones" },
+  foodtalk:   { datos: "foodtalk_datos",   config: "foodtalk_config",   publicaciones: "Publicaciones_Foodtalk" },
+  housetalk:  { datos: "housetalk_datos",  config: "housetalk_config",  publicaciones: "Publicaciones_Housetalk" },
+  markettalk: { datos: "markettalk_datos", config: "markettalk_config", publicaciones: "Publicaciones_Markettalk" },
+  retailtalk: { datos: "retailtalk_datos", config: "retailtalk_config", publicaciones: "Publicaciones_Retailtalk" },
 };
 
 function extractSpreadsheetId(raw: string): string {
