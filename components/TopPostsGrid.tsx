@@ -69,12 +69,18 @@ function PostCard({ post, color }: { post: PostData; color: string }) {
             onError={() => setImgError(true)}
           />
         ) : (
-          <div
-            className="w-full h-full flex items-center justify-center text-5xl"
-            style={{ background: `${netColor}22` }}
+          <a
+            href={post.link || "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full h-full flex flex-col items-center justify-center gap-2 cursor-pointer"
+            style={{ background: `linear-gradient(135deg, ${netColor}18, ${netColor}08)` }}
           >
-            {NETWORK_ICONS[post.network] ?? "📱"}
-          </div>
+            <span className="text-5xl">{NETWORK_ICONS[post.network] ?? "📱"}</span>
+            <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ background: `${netColor}30`, color: netColor }}>
+              Ver en {PLATFORM_LABELS[post.network] ?? post.network}
+            </span>
+          </a>
         )}
         {/* Platform badge */}
         <div
@@ -156,12 +162,15 @@ export default function TopPostsGrid({ posts, color, hasCategoria }: Props) {
     return Array.from(new Set(base.map((p) => p.categoria).filter(Boolean))).sort();
   }, [posts, hasCategoria, activeNetwork]);
 
+  const isCategoryFiltered = hasCategoria && activeCategoria !== "TODAS";
+  const displayCount = isCategoryFiltered ? 5 : 10;
+
   const filtered = useMemo(() => {
     let result = posts;
     if (activeNetwork !== "TODOS") result = result.filter((p) => p.network === activeNetwork);
     if (hasCategoria && activeCategoria !== "TODAS") result = result.filter((p) => p.categoria === activeCategoria);
-    return result.slice(0, 9);
-  }, [posts, activeNetwork, activeCategoria, hasCategoria]);
+    return result.slice(0, displayCount);
+  }, [posts, activeNetwork, activeCategoria, hasCategoria, displayCount]);
 
   if (posts.length === 0) return null;
 
@@ -204,7 +213,11 @@ export default function TopPostsGrid({ posts, color, hasCategoria }: Props) {
         <div className="p-5 pt-4">
           {/* Section title */}
           <div className="mb-4">
-            <h3 className="font-bold text-white text-base">Top Publicaciones del Período</h3>
+            <h3 className="font-bold text-white text-base">
+              {isCategoryFiltered
+                ? `Top 5 Publicaciones — ${toTitleCase(activeCategoria)}`
+                : "Top 10 Publicaciones del Período"}
+            </h3>
             <p className="text-slate-500 text-xs mt-0.5">
               Publicaciones con mayor engagement del mes
             </p>
@@ -235,7 +248,7 @@ export default function TopPostsGrid({ posts, color, hasCategoria }: Props) {
 
           {/* Post cards grid */}
           {filtered.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className={`grid gap-4 ${isCategoryFiltered ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-5" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-5"}`}>
               {filtered.map((post, i) => (
                 <PostCard key={`${post.link || i}`} post={post} color={color} />
               ))}
