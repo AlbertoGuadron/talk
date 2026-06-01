@@ -5,6 +5,7 @@ import {
   parseHousetalkData,
   parseMarkettalkData,
   parseRetailtalkData,
+  parsePostsData,
   buildDashboardData,
 } from "./data-parser";
 import type { TalkDashboardData } from "@/types";
@@ -47,11 +48,11 @@ function parseConfigRows(rows: unknown[][]): TalkMeta {
   };
 }
 
-const SHEET_TAB: Record<TalkSlug, { datos: string; config: string }> = {
-  foodtalk: { datos: "foodtalk_datos", config: "foodtalk_config" },
-  housetalk: { datos: "housetalk_datos", config: "housetalk_config" },
-  markettalk: { datos: "markettalk_datos", config: "markettalk_config" },
-  retailtalk: { datos: "retailtalk_datos", config: "retailtalk_config" },
+const SHEET_TAB: Record<TalkSlug, { datos: string; config: string; publicaciones: string }> = {
+  foodtalk:   { datos: "foodtalk_datos",   config: "foodtalk_config",   publicaciones: "foodtalk_publicaciones" },
+  housetalk:  { datos: "housetalk_datos",  config: "housetalk_config",  publicaciones: "housetalk_publicaciones" },
+  markettalk: { datos: "markettalk_datos", config: "markettalk_config", publicaciones: "markettalk_publicaciones" },
+  retailtalk: { datos: "retailtalk_datos", config: "retailtalk_config", publicaciones: "retailtalk_publicaciones" },
 };
 
 function extractSpreadsheetId(raw: string): string {
@@ -64,9 +65,10 @@ export async function getTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
   const spreadsheetId = extractSpreadsheetId(process.env.GOOGLE_SPREADSHEET_ID!);
   const tabs = SHEET_TAB[slug];
 
-  const [dataRows, configRows] = await Promise.all([
+  const [dataRows, configRows, postRows] = await Promise.all([
     getSheetValues(spreadsheetId, `${tabs.datos}!A1:P500`),
     getSheetValues(spreadsheetId, `${tabs.config}!A1:B20`),
+    getSheetValues(spreadsheetId, `${tabs.publicaciones}!A1:O10000`).catch(() => [] as unknown[][]),
   ]);
 
   const meta = parseConfigRows(configRows);
@@ -77,5 +79,7 @@ export async function getTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
   else if (slug === "markettalk") profiles = parseMarkettalkData(dataRows);
   else profiles = parseRetailtalkData(dataRows);
 
-  return buildDashboardData(slug, profiles, meta);
+  const posts = parsePostsData(postRows, slug);
+
+  return buildDashboardData(slug, profiles, meta, posts);
 }

@@ -33,6 +33,17 @@ export interface ProfileData {
   valorPublicitario?: number;
 }
 
+export interface PostData {
+  date: string;
+  message: string;
+  categoria: string;
+  profile: string;
+  network: string;
+  engagement: number;
+  link: string;
+  imageLink: string;
+}
+
 export interface ChartDataPoint {
   name: string;
   value: number;
@@ -56,6 +67,7 @@ export interface TalkDashboardData {
   porCategoriaPublicaciones?: ChartDataPoint[];
   porCategoriaReacciones?: ChartDataPoint[];
   porCategoriaSeguidores?: ChartDataPoint[];
+  topPosts: PostData[];
   stats: {
     totalPerfiles: number;
     totalSeguidores: number;

@@ -6,6 +6,7 @@ import StatsCard from "@/components/ui/StatsCard";
 import TopBarChartTabbed from "@/components/charts/TopBarChartTabbed";
 import TopBarChartCategoryTabbed from "@/components/charts/TopBarChartCategoryTabbed";
 import NetworkPieChart from "@/components/charts/NetworkPieChart";
+import TopPostsGrid from "@/components/TopPostsGrid";
 
 interface Props {
   data: TalkDashboardData;
@@ -22,6 +23,7 @@ export default function TalkDashboard({ data, config }: Props) {
   const {
     meta, stats, profiles,
     porRedPublicaciones, porRedReacciones, porRedSeguidores,
+    topPosts,
   } = data;
 
   return (
@@ -109,6 +111,13 @@ export default function TalkDashboard({ data, config }: Props) {
           />
         </div>
       )}
+
+      {/* ── Top Publicaciones del Período ─────────────── */}
+      <TopPostsGrid
+        posts={topPosts}
+        color={config.color}
+        hasCategoria={config.hasCategoria}
+      />
     </div>
   );
 }
