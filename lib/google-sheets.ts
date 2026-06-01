@@ -63,12 +63,17 @@ function extractSpreadsheetId(raw: string): string {
 
 export async function getTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
   const spreadsheetId = extractSpreadsheetId(process.env.GOOGLE_SPREADSHEET_ID!);
+  // Publicaciones can live in a separate spreadsheet (GOOGLE_SPREADSHEET_POSTS_ID)
+  // or fall back to the same one if not configured
+  const postsSpreadsheetId = process.env.GOOGLE_SPREADSHEET_POSTS_ID
+    ? extractSpreadsheetId(process.env.GOOGLE_SPREADSHEET_POSTS_ID)
+    : spreadsheetId;
   const tabs = SHEET_TAB[slug];
 
   const [dataRows, configRows, postRows] = await Promise.all([
     getSheetValues(spreadsheetId, `${tabs.datos}!A1:P500`),
     getSheetValues(spreadsheetId, `${tabs.config}!A1:B20`),
-    getSheetValues(spreadsheetId, `${tabs.publicaciones}!A1:O10000`).catch(() => [] as unknown[][]),
+    getSheetValues(postsSpreadsheetId, `${tabs.publicaciones}!A1:O10000`).catch(() => [] as unknown[][]),
   ]);
 
   const meta = parseConfigRows(configRows);
