@@ -85,7 +85,7 @@ export function parseMarkettalkData(rows: unknown[][]): ProfileData[] {
 
 function buildNetworkSum(
   profiles: ProfileData[],
-  field: "publicaciones" | "likes" | "seguidores"
+  field: "publicaciones" | "likes" | "seguidores" | "engagement"
 ): ChartDataPoint[] {
   const map: Record<string, number> = {};
   for (const p of profiles) {
@@ -104,7 +104,7 @@ function buildNetworkSum(
 
 function buildCategoriaSum(
   profiles: ProfileData[],
-  field: "publicaciones" | "likes" | "seguidores",
+  field: "publicaciones" | "likes" | "seguidores" | "engagement",
   color: string
 ): ChartDataPoint[] {
   const map: Record<string, number> = {};
@@ -155,10 +155,10 @@ export function buildDashboardData(
     .map((p) => ({ name: p.profile, value: p.publicaciones, network: p.network, fill: color }));
 
   const topReacciones: ChartDataPoint[] = profiles
-    .filter((p) => p.likes > 0)
-    .sort((a, b) => b.likes - a.likes)
+    .filter((p) => p.engagement > 0)
+    .sort((a, b) => b.engagement - a.engagement)
     .slice(0, 10)
-    .map((p) => ({ name: p.profile, value: p.likes, network: p.network, fill: color }));
+    .map((p) => ({ name: p.profile, value: p.engagement, network: p.network, fill: color }));
 
   const topSeguidores: ChartDataPoint[] = profiles
     .filter((p) => p.seguidores > 0)
@@ -167,14 +167,14 @@ export function buildDashboardData(
     .map((p) => ({ name: p.profile, value: p.seguidores, network: p.network, fill: color }));
 
   const porRedPublicaciones = buildNetworkSum(profiles, "publicaciones");
-  const porRedReacciones = buildNetworkSum(profiles, "likes");
+  const porRedReacciones = buildNetworkSum(profiles, "engagement");
   const porRedSeguidores = buildNetworkSum(profiles, "seguidores");
 
   const porCategoriaPublicaciones = hasCategoria
     ? buildCategoriaSum(profiles, "publicaciones", color)
     : undefined;
   const porCategoriaReacciones = hasCategoria
-    ? buildCategoriaSum(profiles, "likes", color)
+    ? buildCategoriaSum(profiles, "engagement", color)
     : undefined;
   const porCategoriaSeguidores = hasCategoria
     ? buildCategoriaSum(profiles, "seguidores", color)
@@ -184,7 +184,7 @@ export function buildDashboardData(
     totalPerfiles: profiles.length,
     totalSeguidores: profiles.reduce((s, p) => s + p.seguidores, 0),
     totalPublicaciones: profiles.reduce((s, p) => s + p.publicaciones, 0),
-    totalReacciones: profiles.reduce((s, p) => s + p.likes, 0),
+    totalReacciones: profiles.reduce((s, p) => s + p.engagement, 0),
   };
 
   return {

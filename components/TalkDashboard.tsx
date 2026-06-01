@@ -47,10 +47,10 @@ export default function TalkDashboard({ data, config }: Props) {
         />
         <TopBarChartTabbed
           profiles={profiles}
-          field="likes"
+          field="engagement"
           color={config.color}
           title="Top 10 por Reacciones"
-          subtitle="Total de likes y reacciones"
+          subtitle="Reacciones + Comentarios + Compartidos"
         />
         <TopBarChartTabbed
           profiles={profiles}
@@ -72,7 +72,7 @@ export default function TalkDashboard({ data, config }: Props) {
         <NetworkPieChart
           data={porRedReacciones}
           title="Reacciones por Plataforma"
-          subtitle="Suma de reacciones por red social"
+          subtitle="Reacciones + Comentarios + Compartidos por red"
           valueLabel="reacciones"
         />
         <NetworkPieChart
@@ -95,10 +95,10 @@ export default function TalkDashboard({ data, config }: Props) {
           />
           <TopBarChartCategoryTabbed
             profiles={profiles}
-            field="likes"
+            field="engagement"
             color={config.color}
             title="Reacciones por Categoría"
-            subtitle="Suma de reacciones por tipo de marca"
+            subtitle="Reacciones + Comentarios + Compartidos por categoría"
           />
           <TopBarChartCategoryTabbed
             profiles={profiles}

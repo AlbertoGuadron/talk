@@ -7,7 +7,7 @@ import { NETWORK_COLORS } from "@/lib/talks-config";
 
 interface Props {
   profiles: ProfileData[];
-  field: "publicaciones" | "likes" | "seguidores";
+  field: "publicaciones" | "likes" | "seguidores" | "engagement";
   color: string;
   title: string;
   subtitle?: string;
