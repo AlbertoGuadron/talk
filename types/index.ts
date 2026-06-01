@@ -16,6 +16,8 @@ export interface TalkMeta {
   subtitulo: string;
   mes: string;
   analisis: string;
+  analisis2?: string;
+  analisis3?: string;
 }
 
 export interface ProfileData {

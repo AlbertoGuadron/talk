@@ -45,6 +45,8 @@ function parseConfigRows(rows: unknown[][]): TalkMeta {
     subtitulo: map["subtitulo"] || "",
     mes: map["mes"] || "",
     analisis: map["analisis"] || "",
+    analisis2: map["analisis 2"] || "",
+    analisis3: map["analisis 3"] || "",
   };
 }
 

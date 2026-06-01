@@ -7,6 +7,7 @@ import TopBarChartTabbed from "@/components/charts/TopBarChartTabbed";
 import TopBarChartCategoryTabbed from "@/components/charts/TopBarChartCategoryTabbed";
 import NetworkPieChart from "@/components/charts/NetworkPieChart";
 import TopPostsGrid from "@/components/TopPostsGrid";
+import AnalisisBox from "@/components/ui/AnalisisBox";
 
 interface Props {
   data: TalkDashboardData;
@@ -31,12 +32,17 @@ export default function TalkDashboard({ data, config }: Props) {
       <TalkHeader config={config} meta={meta} />
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         <StatsCard label="Perfiles monitoreados" value={fmt(stats.totalPerfiles)}     icon="👥" color={config.color} colorLight={config.colorLight} />
         <StatsCard label="Total seguidores"       value={fmt(stats.totalSeguidores)}  icon="📣" color={config.color} colorLight={config.colorLight} />
         <StatsCard label="Total publicaciones"    value={fmt(stats.totalPublicaciones)} icon="📝" color={config.color} colorLight={config.colorLight} />
         <StatsCard label="Total reacciones"       value={fmt(stats.totalReacciones)}  icon="❤️" color={config.color} colorLight={config.colorLight} />
       </div>
+
+      {/* ── Análisis 2 (debajo de stats) ────────────────── */}
+      {meta.analisis2 && (
+        <AnalisisBox text={meta.analisis2} color={config.color} label="Análisis" />
+      )}
 
       {/* ── Top 10 Rankings ─────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
@@ -110,6 +116,11 @@ export default function TalkDashboard({ data, config }: Props) {
             subtitle="Suma de seguidores por tipo de marca"
           />
         </div>
+      )}
+
+      {/* ── Análisis 3 (encima de top publicaciones) ──── */}
+      {meta.analisis3 && (
+        <AnalisisBox text={meta.analisis3} color={config.color} label="Análisis" />
       )}
 
       {/* ── Top Publicaciones del Período ─────────────── */}
