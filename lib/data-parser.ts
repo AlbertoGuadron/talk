@@ -12,8 +12,11 @@ function parseNumber(val: unknown): number {
 
 function toTitleCase(str: string): string {
   return str
+    .trim()
+    .replace(/\s+/g, " ")
     .toLowerCase()
     .split(" ")
+    .filter(Boolean)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 }
@@ -24,7 +27,7 @@ export function parseFoodtalkData(rows: unknown[][]): ProfileData[] {
     const row = rows[i];
     if (!row[1] || String(row[1]).trim() === "") continue;
     profiles.push({
-      categoria: String(row[0] || "SIN CATEGORÍA").trim(),
+      categoria: String(row[0] || "SIN CATEGORÍA").trim().replace(/\s+/g, " ").toUpperCase(),
       profile: String(row[1]).trim(),
       network: String(row[2] || "").toUpperCase().trim(),
       seguidores: parseNumber(row[3]),
@@ -68,7 +71,7 @@ export function parseMarkettalkData(rows: unknown[][]): ProfileData[] {
     const row = rows[i];
     if (!row[1] || String(row[1]).trim() === "") continue;
     profiles.push({
-      categoria: String(row[0] || "SIN CATEGORÍA").trim(),
+      categoria: String(row[0] || "SIN CATEGORÍA").trim().replace(/\s+/g, " ").toUpperCase(),
       profile: String(row[1]).trim(),
       network: String(row[2] || "").toUpperCase().trim(),
       seguidores: parseNumber(row[3]),
@@ -125,7 +128,7 @@ export function parseRetailtalkData(rows: unknown[][]): ProfileData[] {
     const row = rows[i];
     if (!row[1] || String(row[1]).trim() === "") continue;
     profiles.push({
-      categoria: String(row[0] || "SIN CATEGORÍA").trim(),
+      categoria: String(row[0] || "SIN CATEGORÍA").trim().replace(/\s+/g, " ").toUpperCase(),
       profile: String(row[1]).trim(),
       network: String(row[2] || "").toUpperCase().trim(),
       seguidores: parseNumber(row[3]),
