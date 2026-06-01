@@ -84,7 +84,13 @@ export async function getTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
   else if (slug === "markettalk") profiles = parseMarkettalkData(dataRows);
   else profiles = parseRetailtalkData(dataRows);
 
-  const posts = parsePostsData(postRows, slug);
+  let posts = parsePostsData(postRows, slug);
+
+  // Cache post images to Vercel Blob so they don't expire
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const { syncPostImages } = await import("./image-cache");
+    posts = await syncPostImages(posts, slug);
+  }
 
   return buildDashboardData(slug, profiles, meta, posts);
 }
