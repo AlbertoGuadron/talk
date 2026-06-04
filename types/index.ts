@@ -33,6 +33,7 @@ export interface ProfileData {
   impresiones: number;
   crecimientoSeguidores?: number;
   valorPublicitario?: number;
+  imageLink?: string;
 }
 
 export interface PostData {
@@ -52,6 +53,7 @@ export interface ChartDataPoint {
   network?: string;
   categoria?: string;
   fill?: string;
+  imageLink?: string;
 }
 
 export interface TalkDashboardData {

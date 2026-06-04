@@ -38,6 +38,7 @@ export function parseFoodtalkData(rows: unknown[][]): ProfileData[] {
       engagement: parseNumber(row[8]),
       impresiones: parseNumber(row[9]),
       crecimientoSeguidores: parseNumber(row[10]),
+      imageLink: String(row[14] || "").trim(), // col O
     });
   }
   return profiles;
@@ -60,6 +61,7 @@ export function parseHousetalkData(rows: unknown[][]): ProfileData[] {
       engagement: parseNumber(row[7]),
       impresiones: parseNumber(row[8]),
       valorPublicitario: parseNumber(row[9]),
+      imageLink: String(row[13] || "").trim(), // col N
     });
   }
   return profiles;
@@ -81,6 +83,7 @@ export function parseMarkettalkData(rows: unknown[][]): ProfileData[] {
       compartidos: parseNumber(row[7]),
       engagement: parseNumber(row[8]),
       impresiones: 0,
+      imageLink: String(row[12] || "").trim(), // col M
     });
   }
   return profiles;
@@ -138,6 +141,7 @@ export function parseRetailtalkData(rows: unknown[][]): ProfileData[] {
       compartidos: parseNumber(row[7]),
       engagement: parseNumber(row[8]),
       impresiones: 0,
+      imageLink: String(row[13] || "").trim(), // col N
     });
   }
   return profiles;
@@ -211,7 +215,7 @@ export function buildDashboardData(
     .filter((p) => p.engagement > 0)
     .sort((a, b) => b.engagement - a.engagement)
     .slice(0, 10)
-    .map((p) => ({ name: p.profile, value: p.engagement, network: p.network, fill: color }));
+    .map((p) => ({ name: p.profile, value: p.engagement, network: p.network, fill: color, imageLink: p.imageLink }));
 
   const topSeguidores: ChartDataPoint[] = profiles
     .filter((p) => p.seguidores > 0)

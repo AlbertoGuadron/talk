@@ -11,6 +11,7 @@ interface Props {
   color: string;
   title: string;
   subtitle?: string;
+  hideTabs?: boolean;
 }
 
 const PLATFORM_ORDER = ["FACEBOOK", "INSTAGRAM", "TIKTOK", "TWITTER", "YOUTUBE", "LINKEDIN"];
@@ -24,7 +25,7 @@ const PLATFORM_LABELS: Record<string, string> = {
   LINKEDIN: "LinkedIn",
 };
 
-export default function TopBarChartTabbed({ profiles, field, color, title, subtitle }: Props) {
+export default function TopBarChartTabbed({ profiles, field, color, title, subtitle, hideTabs }: Props) {
   const [activeNetwork, setActiveNetwork] = useState<string>("TODOS");
 
   const networks = useMemo(() => {
@@ -63,32 +64,34 @@ export default function TopBarChartTabbed({ profiles, field, color, title, subti
       className="glass rounded-2xl overflow-hidden"
       style={{ border: "1px solid rgba(255,255,255,0.07)" }}
     >
-      {/* Tab bar */}
-      <div
-        className="flex gap-1 px-4 pt-4 pb-0 flex-wrap"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-      >
-        {tabs.map((tab) => {
-          const isActive = tab === activeNetwork;
-          const tabColor = tab === "TODOS" ? color : (NETWORK_COLORS[tab] ?? color);
-          return (
-            <button
-              key={tab}
-              onClick={() => setActiveNetwork(tab)}
-              className="px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all duration-150 mb-0"
-              style={{
-                color: isActive ? tabColor : "#64748B",
-                background: isActive ? `${tabColor}18` : "transparent",
-                borderBottom: isActive ? `2px solid ${tabColor}` : "2px solid transparent",
-              }}
-            >
-              {tab === "TODOS" ? "Todos" : (PLATFORM_LABELS[tab] ?? tab)}
-            </button>
-          );
-        })}
-      </div>
+      {/* Tab bar — hidden when hideTabs=true */}
+      {!hideTabs && (
+        <div
+          className="flex gap-1 px-4 pt-4 pb-0 flex-wrap"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          {tabs.map((tab) => {
+            const isActive = tab === activeNetwork;
+            const tabColor = tab === "TODOS" ? color : (NETWORK_COLORS[tab] ?? color);
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveNetwork(tab)}
+                className="px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all duration-150 mb-0"
+                style={{
+                  color: isActive ? tabColor : "#64748B",
+                  background: isActive ? `${tabColor}18` : "transparent",
+                  borderBottom: isActive ? `2px solid ${tabColor}` : "2px solid transparent",
+                }}
+              >
+                {tab === "TODOS" ? "Todos" : (PLATFORM_LABELS[tab] ?? tab)}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
-      {/* Chart — reuse TopBarChart but without its outer wrapper */}
+      {/* Chart */}
       <div className="p-5 pt-4">
         <div className="mb-4">
           <h3 className="font-bold text-white text-base">{title}</h3>
