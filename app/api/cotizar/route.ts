@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const DEST = "aguadron@digitalinsightsla.com";
 
+function createTransporter() {
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
+    },
+  });
+}
+
 export async function POST(req: NextRequest) {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    return NextResponse.json({ error: "Email no configurado en el servidor." }, { status: 500 });
+  }
+
   try {
     const { nombre, empresa, cargo, telefono, pais, mensaje } = await req.json();
 
@@ -12,63 +25,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Todos los campos son requeridos." }, { status: 400 });
     }
 
-    await resend.emails.send({
-      from: "TALK Digital Insights <onboarding@resend.dev>",
+    const transporter = createTransporter();
+
+    await transporter.sendMail({
+      from: `"TALK Digital Insights" <${process.env.GMAIL_USER}>`,
       to: DEST,
-      replyTo: undefined,
       subject: `Nueva cotización de ${nombre} — ${empresa}`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f9fafb;border-radius:12px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#FF1493,#00B4D8);padding:28px 32px;">
-            <h1 style="margin:0;color:#fff;font-size:22px;font-weight:800;letter-spacing:-0.5px;">
+            <h1 style="margin:0;color:#fff;font-size:22px;font-weight:800;">
               Nueva Solicitud de Cotización
             </h1>
-            <p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">
-              TALK Digital Insights
-            </p>
+            <p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">TALK Digital Insights</p>
           </div>
           <div style="padding:28px 32px;background:#fff;">
             <table style="width:100%;border-collapse:collapse;">
-              <tr>
-                <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;width:35%;">
-                  <span style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Nombre</span>
-                </td>
-                <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;">
-                  <span style="font-size:15px;color:#0f172a;font-weight:600;">${nombre}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;">
-                  <span style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Empresa</span>
-                </td>
-                <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;">
-                  <span style="font-size:15px;color:#0f172a;font-weight:600;">${empresa}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;">
-                  <span style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Cargo</span>
-                </td>
-                <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;">
-                  <span style="font-size:15px;color:#0f172a;">${cargo}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;">
-                  <span style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Teléfono</span>
-                </td>
-                <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;">
-                  <span style="font-size:15px;color:#0f172a;">${telefono}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;">
-                  <span style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">País</span>
-                </td>
-                <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;">
-                  <span style="font-size:15px;color:#0f172a;">${pais}</span>
-                </td>
-              </tr>
+              ${[
+                ["Nombre", nombre],
+                ["Empresa", empresa],
+                ["Cargo", cargo],
+                ["Teléfono", telefono],
+                ["País", pais],
+              ].map(([label, value]) => `
+                <tr>
+                  <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;width:35%;font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">${label}</td>
+                  <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;font-size:15px;color:#0f172a;font-weight:600;">${value}</td>
+                </tr>
+              `).join("")}
             </table>
             <div style="margin-top:20px;">
               <p style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 8px;">Mensaje</p>
@@ -78,9 +62,7 @@ export async function POST(req: NextRequest) {
             </div>
           </div>
           <div style="padding:16px 32px;background:#f8fafc;text-align:center;">
-            <p style="margin:0;font-size:12px;color:#94a3b8;">
-              Enviado desde el formulario de cotización de TALK Digital Insights
-            </p>
+            <p style="margin:0;font-size:12px;color:#94a3b8;">Formulario de cotización — TALK Digital Insights</p>
           </div>
         </div>
       `,
@@ -89,6 +71,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Email error:", err);
-    return NextResponse.json({ error: "Error al enviar el mensaje." }, { status: 500 });
+    return NextResponse.json({ error: "Error al enviar el mensaje. Intenta de nuevo." }, { status: 500 });
   }
 }
