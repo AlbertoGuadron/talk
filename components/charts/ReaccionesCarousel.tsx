@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { ChartDataPoint } from "@/types";
 import { NETWORK_COLORS } from "@/lib/talks-config";
 
@@ -9,10 +9,6 @@ interface Props {
   color: string;
 }
 
-const PLATFORM_LABELS: Record<string, string> = {
-  FACEBOOK: "Facebook", INSTAGRAM: "Instagram", TIKTOK: "TikTok",
-  TWITTER: "Twitter",   YOUTUBE: "YouTube",     LINKEDIN: "LinkedIn",
-};
 const NETWORK_ICONS: Record<string, string> = {
   FACEBOOK: "📘", INSTAGRAM: "📸", TIKTOK: "🎵", TWITTER: "𝕏", YOUTUBE: "▶️",
 };
@@ -128,7 +124,6 @@ export default function ReaccionesCarousel({ data, color }: Props) {
   };
 
   const item = data[current];
-  const nc   = NETWORK_COLORS[item.network ?? ""] ?? color;
 
   return (
     <div
@@ -164,9 +159,8 @@ export default function ReaccionesCarousel({ data, color }: Props) {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div style={{
             width: "60%", height: "70%",
-            background: `radial-gradient(ellipse at center, ${nc}35 0%, transparent 70%)`,
+            background: `radial-gradient(ellipse at center, ${color}35 0%, transparent 70%)`,
             filter: "blur(30px)",
-            transition: "background 0.5s",
           }} />
         </div>
 
@@ -189,14 +183,6 @@ export default function ReaccionesCarousel({ data, color }: Props) {
                 {/* Bottom gradient */}
                 <div className="absolute inset-0 pointer-events-none"
                   style={{ background: "linear-gradient(to top, rgba(4,8,20,0.95) 0%, rgba(4,8,20,0.4) 40%, transparent 65%)" }} />
-
-                {/* Network badge */}
-                <div className="absolute top-3 right-3">
-                  <span className="px-2.5 py-1 rounded-full text-xs font-bold shadow-lg backdrop-blur-sm"
-                    style={{ background: `${NETWORK_COLORS[slide.network ?? ""] ?? color}cc`, color: "#fff" }}>
-                    {PLATFORM_LABELS[slide.network ?? ""] ?? slide.network}
-                  </span>
-                </div>
 
                 {/* Rank + Name — only animate for center */}
                 {isCenter && (

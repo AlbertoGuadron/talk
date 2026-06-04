@@ -211,11 +211,26 @@ export function buildDashboardData(
     .slice(0, 10)
     .map((p) => ({ name: p.profile, value: p.publicaciones, network: p.network, fill: color }));
 
-  const topReacciones: ChartDataPoint[] = profiles
-    .filter((p) => p.engagement > 0)
-    .sort((a, b) => b.engagement - a.engagement)
-    .slice(0, 10)
-    .map((p) => ({ name: p.profile, value: p.engagement, network: p.network, fill: color, imageLink: p.imageLink }));
+  // Top 10 reacciones: aggregate by brand (sum all platforms),
+  // use the image from the platform with the highest engagement
+  const topReacciones: ChartDataPoint[] = (() => {
+    const map: Record<string, { total: number; bestImg: string; bestEng: number }> = {};
+    for (const p of profiles) {
+      if (p.engagement <= 0) continue;
+      if (!map[p.profile]) map[p.profile] = { total: 0, bestImg: "", bestEng: 0 };
+      map[p.profile].total += p.engagement;
+      if (p.engagement > map[p.profile].bestEng) {
+        map[p.profile].bestEng = p.engagement;
+        map[p.profile].bestImg = p.imageLink || "";
+      }
+    }
+    return Object.entries(map)
+      .sort(([, a], [, b]) => b.total - a.total)
+      .slice(0, 10)
+      .map(([name, { total, bestImg }]) => ({
+        name, value: total, fill: color, imageLink: bestImg,
+      }));
+  })();
 
   const topSeguidores: ChartDataPoint[] = profiles
     .filter((p) => p.seguidores > 0)
