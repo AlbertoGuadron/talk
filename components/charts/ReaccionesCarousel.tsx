@@ -10,26 +10,20 @@ interface Props {
 }
 
 const PLATFORM_LABELS: Record<string, string> = {
-  FACEBOOK: "Facebook",
-  INSTAGRAM: "Instagram",
-  TIKTOK: "TikTok",
-  TWITTER: "Twitter",
-  YOUTUBE: "YouTube",
-  LINKEDIN: "LinkedIn",
+  FACEBOOK: "Facebook", INSTAGRAM: "Instagram", TIKTOK: "TikTok",
+  TWITTER: "Twitter",   YOUTUBE: "YouTube",     LINKEDIN: "LinkedIn",
 };
 const NETWORK_ICONS: Record<string, string> = {
   FACEBOOK: "📘", INSTAGRAM: "📸", TIKTOK: "🎵", TWITTER: "𝕏", YOUTUBE: "▶️",
 };
 
-const AUTO_DELAY = 4000;
-
-function SlideImage({ src, network, color }: { src?: string; network?: string; color: string }) {
+function CardImg({ src, network, color }: { src?: string; network?: string; color: string }) {
   const [err, setErr] = useState(false);
-  const netColor = NETWORK_COLORS[network ?? ""] ?? color;
+  const nc = NETWORK_COLORS[network ?? ""] ?? color;
   if (!src || err) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-7xl"
-        style={{ background: `linear-gradient(135deg, ${netColor}18, ${netColor}06)` }}>
+      <div className="w-full h-full flex items-center justify-center text-6xl"
+        style={{ background: `linear-gradient(135deg,${nc}20,${nc}06)` }}>
         {NETWORK_ICONS[network ?? ""] ?? "📱"}
       </div>
     );
@@ -38,13 +32,13 @@ function SlideImage({ src, network, color }: { src?: string; network?: string; c
   return <img src={src} alt="" className="w-full h-full object-cover" onError={() => setErr(true)} />;
 }
 
-function ThumbImage({ src, network, color }: { src?: string; network?: string; color: string }) {
+function ThumbImg({ src, network, color }: { src?: string; network?: string; color: string }) {
   const [err, setErr] = useState(false);
-  const netColor = NETWORK_COLORS[network ?? ""] ?? color;
+  const nc = NETWORK_COLORS[network ?? ""] ?? color;
   if (!src || err) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-lg"
-        style={{ background: `${netColor}22` }}>
+      <div className="w-full h-full flex items-center justify-center text-base"
+        style={{ background: `${nc}22` }}>
         {NETWORK_ICONS[network ?? ""] ?? "📱"}
       </div>
     );
@@ -55,156 +49,200 @@ function ThumbImage({ src, network, color }: { src?: string; network?: string; c
 
 export default function ReaccionesCarousel({ data, color }: Props) {
   const [current, setCurrent] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [paused, setPaused]   = useState(false);
+  const [tilt, setTilt]       = useState({ x: 0, y: 0 });
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [textKey, setTextKey] = useState(0); // trigger text re-animation
   const total = data.length;
 
   const goTo = useCallback((idx: number) => {
     setCurrent(idx);
-    setProgress(0);
+    setTextKey(k => k + 1);
   }, []);
-
   const prev = useCallback(() => goTo((current - 1 + total) % total), [current, total, goTo]);
   const next = useCallback(() => goTo((current + 1) % total), [current, total, goTo]);
 
-  // Progress bar + auto-advance
+  // Auto-advance
   useEffect(() => {
     if (paused || total <= 1) return;
-    setProgress(0);
-    const step = 100 / (AUTO_DELAY / 50);
-    progressRef.current = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 100) {
-          next();
-          return 0;
-        }
-        return p + step;
-      });
-    }, 50);
-    return () => { if (progressRef.current) clearInterval(progressRef.current); };
-  }, [current, paused, total, next]);
+    const t = setInterval(next, 4000);
+    return () => clearInterval(t);
+  }, [paused, next, total]);
+
+  // 3D tilt (center card only)
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width  - 0.5) * 14;
+    const y = ((e.clientY - r.top)  / r.height - 0.5) * -10;
+    setTilt({ x: y, y: x });
+  };
+
+  // Swipe
+  const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.touches[0].clientX);
+  const handleTouchEnd   = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    const d = touchStart - e.changedTouches[0].clientX;
+    if (Math.abs(d) > 40) d > 0 ? next() : prev();
+    setTouchStart(null);
+  };
 
   if (total === 0) return null;
 
+  // Card transform per position offset
+  const cardStyle = (pos: number): React.CSSProperties => {
+    const abs = Math.abs(pos);
+    if (abs > 2) return { opacity: 0, pointerEvents: "none", position: "absolute", width: "100%" };
+
+    const base: React.CSSProperties = {
+      position: "absolute",
+      left: 0, top: 0,
+      width: "100%", height: "100%",
+      transition: "transform 0.55s cubic-bezier(0.22,1,0.36,1), opacity 0.55s, filter 0.55s",
+      borderRadius: 16,
+      overflow: "hidden",
+      cursor: abs > 0 ? "pointer" : "default",
+    };
+
+    if (pos === 0) {
+      return {
+        ...base,
+        zIndex: 20,
+        opacity: 1,
+        transform: `scale(1) translateX(0%) perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+        filter: "brightness(1)",
+        boxShadow: `0 20px 60px rgba(0,0,0,0.5), 0 0 40px ${color}30`,
+      };
+    }
+    const sign = pos > 0 ? 1 : -1;
+    const offset = abs === 1 ? 78 : 110;
+    const rot = sign * -22;
+    const scl = abs === 1 ? 0.78 : 0.62;
+    const bri = abs === 1 ? 0.45 : 0.25;
+    return {
+      ...base,
+      zIndex: 20 - abs * 5,
+      opacity: abs === 1 ? 0.7 : 0.3,
+      transform: `scale(${scl}) translateX(${sign * offset}%) perspective(1000px) rotateY(${rot}deg)`,
+      filter: `brightness(${bri})`,
+    };
+  };
+
   const item = data[current];
-  const netColor = NETWORK_COLORS[item.network ?? ""] ?? color;
+  const nc   = NETWORK_COLORS[item.network ?? ""] ?? color;
 
   return (
     <div
       className="glass rounded-2xl overflow-hidden mb-5"
       style={{ border: "1px solid rgba(255,255,255,0.07)" }}
       onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onMouseLeave={() => { setPaused(false); setTilt({ x: 0, y: 0 }); }}
     >
-      {/* ── Main slide ──────────────────────────────────── */}
-      <div className="relative overflow-hidden" style={{ height: 420 }}>
-
-        {/* All slides stacked, sliding via transform */}
-        <div className="absolute inset-0" style={{ display: "flex" }}>
-          {data.map((slide, i) => (
-            <div
-              key={i}
-              className="absolute inset-0 w-full h-full"
-              style={{
-                transform: `translateX(${(i - current) * 100}%)`,
-                transition: "transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-              }}
-            >
-              <SlideImage src={slide.imageLink} network={slide.network} color={color} />
-            </div>
-          ))}
+      {/* ── Header ─────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-5 pt-4 pb-3"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div>
+          <h3 className="font-bold text-white text-base">Top 10 Reacciones del Mes</h3>
+          <p className="text-slate-500 text-xs mt-0.5">Perfiles con mayor engagement</p>
         </div>
-
-        {/* Dark gradient overlays */}
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "linear-gradient(to top, rgba(5,10,25,0.92) 0%, rgba(5,10,25,0.3) 45%, transparent 70%)" }} />
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "linear-gradient(to bottom, rgba(5,10,25,0.4) 0%, transparent 30%)" }} />
-
-        {/* ── Top bar: title + arrows ── */}
-        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-5 pt-4 z-10">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest" style={{ color }}>Top 10 Reacciones</p>
-            <p className="text-white text-xs opacity-60 mt-0.5">Perfiles con mayor engagement</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={prev}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold backdrop-blur-sm transition-all hover:scale-110"
-              style={{ background: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)" }}>
-              ‹
-            </button>
-            <span className="text-xs text-white opacity-50 w-8 text-center">{current + 1}/{total}</span>
-            <button onClick={next}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold backdrop-blur-sm transition-all hover:scale-110"
-              style={{ background: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)" }}>
-              ›
-            </button>
-          </div>
-        </div>
-
-        {/* ── Network badge ── */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
-          <span className="px-3 py-1 rounded-full text-xs font-bold shadow-lg"
-            style={{ background: netColor, color: "#fff" }}>
-            {PLATFORM_LABELS[item.network ?? ""] ?? item.network}
-          </span>
-        </div>
-
-        {/* ── Bottom info ── */}
-        <div className="absolute bottom-0 left-0 right-0 px-6 pb-5 z-10">
-          {/* Rank */}
-          <div className="flex items-end gap-4">
-            <span
-              className="text-8xl font-black leading-none"
-              style={{
-                color: "transparent",
-                WebkitTextStroke: `2px ${color}`,
-                textShadow: `0 0 40px ${color}60`,
-                lineHeight: 1,
-              }}
-            >
-              #{current + 1}
-            </span>
-            <div className="pb-2">
-              <p className="text-white font-black text-xl leading-tight drop-shadow-lg">
-                {item.name}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Progress bar ── */}
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 z-20" style={{ background: "rgba(255,255,255,0.1)" }}>
-          <div
-            className="h-full transition-none"
-            style={{ width: `${progress}%`, background: color, transition: paused ? "none" : "width 50ms linear" }}
-          />
+        <div className="flex items-center gap-2">
+          <button onClick={prev}
+            className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg transition-all hover:scale-110 active:scale-95"
+            style={{ background: `${color}20`, color, border: `1px solid ${color}40` }}>‹</button>
+          <span className="text-xs text-slate-500 w-10 text-center tabular-nums">{current + 1} / {total}</span>
+          <button onClick={next}
+            className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg transition-all hover:scale-110 active:scale-95"
+            style={{ background: `${color}20`, color, border: `1px solid ${color}40` }}>›</button>
         </div>
       </div>
 
-      {/* ── Thumbnail strip ─────────────────────────────── */}
-      <div className="px-4 py-3" style={{ background: "rgba(0,0,0,0.2)" }}>
-        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+      {/* ── 3D Coverflow stage ─────────────────────────── */}
+      <div className="relative px-2 pt-4 pb-2"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}>
+
+        {/* Glow blob behind active card */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div style={{
+            width: "60%", height: "70%",
+            background: `radial-gradient(ellipse at center, ${nc}35 0%, transparent 70%)`,
+            filter: "blur(30px)",
+            transition: "background 0.5s",
+          }} />
+        </div>
+
+        {/* Card stage */}
+        <div className="relative mx-auto" style={{ height: 380, maxWidth: 700 }}>
+          {data.map((slide, i) => {
+            const pos = i - current;
+            const isCenter = pos === 0;
+            return (
+              <div
+                key={i}
+                style={cardStyle(pos)}
+                onClick={() => !isCenter && goTo(i)}
+                onMouseMove={isCenter ? handleMouseMove : undefined}
+                onMouseLeave={isCenter ? () => setTilt({ x: 0, y: 0 }) : undefined}
+              >
+                {/* Image */}
+                <CardImg src={slide.imageLink} network={slide.network} color={color} />
+
+                {/* Bottom gradient */}
+                <div className="absolute inset-0 pointer-events-none"
+                  style={{ background: "linear-gradient(to top, rgba(4,8,20,0.95) 0%, rgba(4,8,20,0.4) 40%, transparent 65%)" }} />
+
+                {/* Network badge */}
+                <div className="absolute top-3 right-3">
+                  <span className="px-2.5 py-1 rounded-full text-xs font-bold shadow-lg backdrop-blur-sm"
+                    style={{ background: `${NETWORK_COLORS[slide.network ?? ""] ?? color}cc`, color: "#fff" }}>
+                    {PLATFORM_LABELS[slide.network ?? ""] ?? slide.network}
+                  </span>
+                </div>
+
+                {/* Rank + Name — only animate for center */}
+                {isCenter && (
+                  <div key={textKey} className="absolute bottom-0 left-0 right-0 px-5 pb-5"
+                    style={{ animation: "slideUp 0.45s cubic-bezier(0.22,1,0.36,1) both" }}>
+                    <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color }}>
+                      #{current + 1}
+                    </p>
+                    <p className="text-white font-black text-2xl leading-tight drop-shadow-xl">
+                      {slide.name}
+                    </p>
+                  </div>
+                )}
+
+                {/* Rank badge for non-center */}
+                {!isCenter && (
+                  <div className="absolute bottom-4 left-4">
+                    <span className="text-white font-black text-sm opacity-80">#{i + 1}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* CSS keyframe for text animation */}
+        <style>{`@keyframes slideUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }`}</style>
+      </div>
+
+      {/* ── Thumbnail strip ────────────────────────────── */}
+      <div className="px-5 pb-4">
+        <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
           {data.map((slide, i) => (
-            <button
-              key={i}
-              onClick={() => goTo(i)}
-              className="flex-shrink-0 rounded-lg overflow-hidden relative transition-all duration-200"
+            <button key={i} onClick={() => goTo(i)}
+              className="flex-shrink-0 relative rounded-lg overflow-hidden transition-all duration-300"
               style={{
-                width: 56,
-                height: 40,
-                border: `2px solid ${i === current ? color : "transparent"}`,
-                opacity: i === current ? 1 : 0.45,
-                transform: i === current ? "scale(1.08)" : "scale(1)",
-                boxShadow: i === current ? `0 0 8px ${color}80` : "none",
-              }}
-            >
-              <ThumbImage src={slide.imageLink} network={slide.network} color={color} />
-              {/* Rank label */}
-              <div className="absolute bottom-0 left-0 right-0 text-center"
-                style={{ background: "rgba(0,0,0,0.55)", fontSize: 9, color: i === current ? color : "#fff", fontWeight: 700, lineHeight: "14px" }}>
-                #{i + 1}
+                width: 52, height: 36,
+                border: `2px solid ${i === current ? color : "rgba(255,255,255,0.1)"}`,
+                transform: i === current ? "scale(1.1)" : "scale(1)",
+                boxShadow: i === current ? `0 0 10px ${color}60` : "none",
+                opacity: i === current ? 1 : 0.5,
+              }}>
+              <ThumbImg src={slide.imageLink} network={slide.network} color={color} />
+              <div className="absolute inset-0 flex items-end justify-center pb-0.5"
+                style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65), transparent)" }}>
+                <span className="text-white font-bold" style={{ fontSize: 8, color: i === current ? color : "#fff" }}>#{i + 1}</span>
               </div>
             </button>
           ))}
