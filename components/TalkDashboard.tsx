@@ -88,12 +88,9 @@ export default function TalkDashboard({ data, config }: Props) {
         </div>
       )}
 
-      {/* ── Análisis 2 y 3 (encima de top publicaciones) ─── */}
+      {/* ── Análisis 2 (encima de top publicaciones) ──────── */}
       {meta.analisis2 && (
         <AnalisisBox text={meta.analisis2} color={config.color} label="Análisis" />
-      )}
-      {meta.analisis3 && (
-        <AnalisisBox text={meta.analisis3} color={config.color} label="Análisis" />
       )}
 
       {/* ── Top Publicaciones del Período ─────────────────── */}
