@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { ChartDataPoint } from "@/types";
 import { NETWORK_COLORS } from "@/lib/talks-config";
 
@@ -17,59 +17,78 @@ const PLATFORM_LABELS: Record<string, string> = {
   YOUTUBE: "YouTube",
   LINKEDIN: "LinkedIn",
 };
-
 const NETWORK_ICONS: Record<string, string> = {
-  FACEBOOK: "📘",
-  INSTAGRAM: "📸",
-  TIKTOK: "🎵",
-  TWITTER: "𝕏",
-  YOUTUBE: "▶️",
+  FACEBOOK: "📘", INSTAGRAM: "📸", TIKTOK: "🎵", TWITTER: "𝕏", YOUTUBE: "▶️",
 };
 
-function fmt(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K`;
-  return String(v);
-}
+const AUTO_DELAY = 4000;
 
-function CardImage({ src, network, color }: { src?: string; network?: string; color: string }) {
+function SlideImage({ src, network, color }: { src?: string; network?: string; color: string }) {
   const [err, setErr] = useState(false);
   const netColor = NETWORK_COLORS[network ?? ""] ?? color;
   if (!src || err) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-4xl"
-        style={{ background: `${netColor}18` }}>
+      <div className="w-full h-full flex items-center justify-center text-7xl"
+        style={{ background: `linear-gradient(135deg, ${netColor}18, ${netColor}06)` }}>
         {NETWORK_ICONS[network ?? ""] ?? "📱"}
       </div>
     );
   }
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt="" className="w-full h-full object-cover" onError={() => setErr(true)} />
-  );
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt="" className="w-full h-full object-cover" onError={() => setErr(true)} />;
+}
+
+function ThumbImage({ src, network, color }: { src?: string; network?: string; color: string }) {
+  const [err, setErr] = useState(false);
+  const netColor = NETWORK_COLORS[network ?? ""] ?? color;
+  if (!src || err) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-lg"
+        style={{ background: `${netColor}22` }}>
+        {NETWORK_ICONS[network ?? ""] ?? "📱"}
+      </div>
+    );
+  }
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt="" className="w-full h-full object-cover" onError={() => setErr(true)} />;
 }
 
 export default function ReaccionesCarousel({ data, color }: Props) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const total = data.length;
 
-  const prev = useCallback(() => setCurrent((c) => (c - 1 + total) % total), [total]);
-  const next = useCallback(() => setCurrent((c) => (c + 1) % total), [total]);
+  const goTo = useCallback((idx: number) => {
+    setCurrent(idx);
+    setProgress(0);
+  }, []);
 
-  // Auto-advance every 4 seconds
+  const prev = useCallback(() => goTo((current - 1 + total) % total), [current, total, goTo]);
+  const next = useCallback(() => goTo((current + 1) % total), [current, total, goTo]);
+
+  // Progress bar + auto-advance
   useEffect(() => {
     if (paused || total <= 1) return;
-    const t = setInterval(next, 4000);
-    return () => clearInterval(t);
-  }, [paused, next, total]);
+    setProgress(0);
+    const step = 100 / (AUTO_DELAY / 50);
+    progressRef.current = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 100) {
+          next();
+          return 0;
+        }
+        return p + step;
+      });
+    }, 50);
+    return () => { if (progressRef.current) clearInterval(progressRef.current); };
+  }, [current, paused, total, next]);
 
   if (total === 0) return null;
 
-  // Visible cards: 4 on xl, 3 on lg, 2 on sm, 1 on mobile
-  // We render a sliding window of 4 cards around current
-  const VISIBLE = 4;
-  const slides = Array.from({ length: VISIBLE }, (_, i) => data[(current + i) % total]);
+  const item = data[current];
+  const netColor = NETWORK_COLORS[item.network ?? ""] ?? color;
 
   return (
     <div
@@ -78,101 +97,116 @@ export default function ReaccionesCarousel({ data, color }: Props) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-5 pb-3"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div>
-          <h3 className="font-bold text-white text-base">Top 10 Reacciones del Mes</h3>
-          <p className="text-slate-500 text-xs mt-0.5">Perfiles con mayor engagement del período</p>
+      {/* ── Main slide ──────────────────────────────────── */}
+      <div className="relative overflow-hidden" style={{ height: 420 }}>
+
+        {/* All slides stacked, sliding via transform */}
+        <div className="absolute inset-0" style={{ display: "flex" }}>
+          {data.map((slide, i) => (
+            <div
+              key={i}
+              className="absolute inset-0 w-full h-full"
+              style={{
+                transform: `translateX(${(i - current) * 100}%)`,
+                transition: "transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+              }}
+            >
+              <SlideImage src={slide.imageLink} network={slide.network} color={color} />
+            </div>
+          ))}
         </div>
-        {/* Navigation arrows */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={prev}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
-            style={{ background: `${color}20`, color }}
-            aria-label="Anterior"
-          >
-            ‹
-          </button>
-          <span className="text-xs text-slate-500 min-w-[40px] text-center">
-            {current + 1} / {total}
+
+        {/* Dark gradient overlays */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "linear-gradient(to top, rgba(5,10,25,0.92) 0%, rgba(5,10,25,0.3) 45%, transparent 70%)" }} />
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "linear-gradient(to bottom, rgba(5,10,25,0.4) 0%, transparent 30%)" }} />
+
+        {/* ── Top bar: title + arrows ── */}
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-5 pt-4 z-10">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest" style={{ color }}>Top 10 Reacciones</p>
+            <p className="text-white text-xs opacity-60 mt-0.5">Perfiles con mayor engagement</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={prev}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold backdrop-blur-sm transition-all hover:scale-110"
+              style={{ background: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)" }}>
+              ‹
+            </button>
+            <span className="text-xs text-white opacity-50 w-8 text-center">{current + 1}/{total}</span>
+            <button onClick={next}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold backdrop-blur-sm transition-all hover:scale-110"
+              style={{ background: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)" }}>
+              ›
+            </button>
+          </div>
+        </div>
+
+        {/* ── Network badge ── */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
+          <span className="px-3 py-1 rounded-full text-xs font-bold shadow-lg"
+            style={{ background: netColor, color: "#fff" }}>
+            {PLATFORM_LABELS[item.network ?? ""] ?? item.network}
           </span>
-          <button
-            onClick={next}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
-            style={{ background: `${color}20`, color }}
-            aria-label="Siguiente"
-          >
-            ›
-          </button>
+        </div>
+
+        {/* ── Bottom info ── */}
+        <div className="absolute bottom-0 left-0 right-0 px-6 pb-5 z-10">
+          {/* Rank */}
+          <div className="flex items-end gap-4">
+            <span
+              className="text-8xl font-black leading-none"
+              style={{
+                color: "transparent",
+                WebkitTextStroke: `2px ${color}`,
+                textShadow: `0 0 40px ${color}60`,
+                lineHeight: 1,
+              }}
+            >
+              #{current + 1}
+            </span>
+            <div className="pb-2">
+              <p className="text-white font-black text-xl leading-tight drop-shadow-lg">
+                {item.name}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Progress bar ── */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 z-20" style={{ background: "rgba(255,255,255,0.1)" }}>
+          <div
+            className="h-full transition-none"
+            style={{ width: `${progress}%`, background: color, transition: paused ? "none" : "width 50ms linear" }}
+          />
         </div>
       </div>
 
-      {/* Cards */}
-      <div className="p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {slides.map((item, i) => {
-            const rank = (current + i) % total;
-            const netColor = NETWORK_COLORS[item.network ?? ""] ?? color;
-            return (
-              <div
-                key={`${item.name}-${rank}`}
-                className="glass rounded-xl overflow-hidden flex flex-col transition-transform duration-300"
-                style={{ border: "1px solid rgba(255,255,255,0.08)" }}
-              >
-                {/* Image */}
-                <div className="relative" style={{ height: 160 }}>
-                  <CardImage src={item.imageLink} network={item.network} color={color} />
-                  {/* Rank badge */}
-                  <div
-                    className="absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow"
-                    style={{ background: color, color: "#fff" }}
-                  >
-                    {rank + 1}
-                  </div>
-                  {/* Network badge */}
-                  <div
-                    className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-bold shadow"
-                    style={{ background: netColor, color: "#fff" }}
-                  >
-                    {PLATFORM_LABELS[item.network ?? ""] ?? item.network}
-                  </div>
-                  {/* Gradient overlay */}
-                  <div
-                    className="absolute bottom-0 left-0 right-0 h-12"
-                    style={{ background: "linear-gradient(to top, rgba(10,16,32,0.9), transparent)" }}
-                  />
-                </div>
-
-                {/* Info */}
-                <div className="p-3 flex flex-col gap-1 flex-1">
-                  <p className="font-bold text-white text-sm leading-tight line-clamp-1">
-                    {item.name}
-                  </p>
-                  <p className="font-black text-lg leading-none" style={{ color }}>
-                    ❤️ {fmt(item.value)}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Dot indicators */}
-        <div className="flex justify-center gap-1.5 mt-4">
-          {data.map((_, i) => (
+      {/* ── Thumbnail strip ─────────────────────────────── */}
+      <div className="px-4 py-3" style={{ background: "rgba(0,0,0,0.2)" }}>
+        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+          {data.map((slide, i) => (
             <button
               key={i}
-              onClick={() => setCurrent(i)}
-              className="rounded-full transition-all duration-200"
+              onClick={() => goTo(i)}
+              className="flex-shrink-0 rounded-lg overflow-hidden relative transition-all duration-200"
               style={{
-                width: i === current ? 20 : 6,
-                height: 6,
-                background: i === current ? color : "rgba(255,255,255,0.2)",
+                width: 56,
+                height: 40,
+                border: `2px solid ${i === current ? color : "transparent"}`,
+                opacity: i === current ? 1 : 0.45,
+                transform: i === current ? "scale(1.08)" : "scale(1)",
+                boxShadow: i === current ? `0 0 8px ${color}80` : "none",
               }}
-              aria-label={`Ir a ${i + 1}`}
-            />
+            >
+              <ThumbImage src={slide.imageLink} network={slide.network} color={color} />
+              {/* Rank label */}
+              <div className="absolute bottom-0 left-0 right-0 text-center"
+                style={{ background: "rgba(0,0,0,0.55)", fontSize: 9, color: i === current ? color : "#fff", fontWeight: 700, lineHeight: "14px" }}>
+                #{i + 1}
+              </div>
+            </button>
           ))}
         </div>
       </div>
