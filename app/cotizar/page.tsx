@@ -4,17 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-const PAISES = [
-  "El Salvador", "Guatemala", "Honduras", "Nicaragua", "Costa Rica", "Panamá",
-  "México", "Colombia", "Venezuela", "Perú", "Ecuador", "Bolivia",
-  "Chile", "Argentina", "Uruguay", "Paraguay", "España", "Estados Unidos", "Otro",
-];
+const PAISES = ["El Salvador", "Honduras", "Guatemala"];
+
+const SERVICIOS = ["Foodtalk", "Housetalk", "Markettalk", "Retailtalk", "Otros"];
 
 type Status = "idle" | "loading" | "success" | "error";
 
 export default function CotizarPage() {
   const [form, setForm] = useState({
-    nombre: "", empresa: "", cargo: "", telefono: "", pais: "", mensaje: "",
+    nombre: "", empresa: "", cargo: "", correo: "", telefono: "",
+    pais: "", servicio: "", mensaje: "",
   });
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -35,7 +34,7 @@ export default function CotizarPage() {
       });
       if (res.ok) {
         setStatus("success");
-        setForm({ nombre: "", empresa: "", cargo: "", telefono: "", pais: "", mensaje: "" });
+        setForm({ nombre: "", empresa: "", cargo: "", correo: "", telefono: "", pais: "", servicio: "", mensaje: "" });
       } else {
         const data = await res.json().catch(() => ({}));
         setErrorMsg(data.error ?? "Error al enviar. Intenta de nuevo.");
@@ -58,7 +57,7 @@ export default function CotizarPage() {
       className="min-h-screen"
       style={{ background: "linear-gradient(135deg, #060B1F 0%, #0D1535 100%)" }}
     >
-      {/* Simple header */}
+      {/* Header */}
       <header
         className="fixed top-0 left-0 right-0 z-50"
         style={{
@@ -71,17 +70,14 @@ export default function CotizarPage() {
           <Link href="/">
             <Image src="/galeria/logotalk.png" alt="TALK" width={160} height={48} className="h-16 w-auto" />
           </Link>
-          <Link
-            href="/"
-            className="text-slate-400 hover:text-white text-sm font-medium transition-colors"
-          >
+          <Link href="/" className="text-slate-400 hover:text-white text-sm font-medium transition-colors">
             ← Volver al inicio
           </Link>
         </div>
       </header>
 
       <div className="pt-32 pb-20 px-4 max-w-2xl mx-auto">
-        {/* Header */}
+        {/* Title */}
         <div className="text-center mb-10">
           <span
             className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
@@ -97,7 +93,7 @@ export default function CotizarPage() {
           </p>
         </div>
 
-        {/* Form card */}
+        {/* Card */}
         <div
           className="rounded-2xl p-6 sm:p-8"
           style={{
@@ -123,96 +119,69 @@ export default function CotizarPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Row 1: Nombre + Empresa */}
+
+              {/* Nombre + Empresa */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
-                    Nombre completo *
-                  </label>
-                  <input
-                    type="text" name="nombre" required
-                    value={form.nombre} onChange={handleChange}
-                    placeholder="Juan Pérez"
-                    className={inputClass}
-                  />
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">Nombre completo *</label>
+                  <input type="text" name="nombre" required value={form.nombre} onChange={handleChange} placeholder="Juan Pérez" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
-                    Empresa *
-                  </label>
-                  <input
-                    type="text" name="empresa" required
-                    value={form.empresa} onChange={handleChange}
-                    placeholder="Mi Empresa S.A."
-                    className={inputClass}
-                  />
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">Empresa *</label>
+                  <input type="text" name="empresa" required value={form.empresa} onChange={handleChange} placeholder="Mi Empresa S.A." className={inputClass} />
                 </div>
               </div>
 
-              {/* Row 2: Cargo + Teléfono */}
+              {/* Cargo + Teléfono */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
-                    Cargo *
-                  </label>
-                  <input
-                    type="text" name="cargo" required
-                    value={form.cargo} onChange={handleChange}
-                    placeholder="Gerente de Marketing"
-                    className={inputClass}
-                  />
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">Cargo *</label>
+                  <input type="text" name="cargo" required value={form.cargo} onChange={handleChange} placeholder="Gerente de Marketing" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
-                    Teléfono *
-                  </label>
-                  <input
-                    type="tel" name="telefono" required
-                    value={form.telefono} onChange={handleChange}
-                    placeholder="+503 7000 0000"
-                    className={inputClass}
-                  />
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">Teléfono *</label>
+                  <input type="tel" name="telefono" required value={form.telefono} onChange={handleChange} placeholder="+503 7000 0000" className={inputClass} />
                 </div>
               </div>
 
-              {/* Row 3: País */}
+              {/* Correo */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
-                  País *
-                </label>
-                <select
-                  name="pais" required
-                  value={form.pais} onChange={handleChange}
-                  className={inputClass}
-                  style={{ appearance: "none" }}
-                >
-                  <option value="" disabled>Selecciona tu país</option>
-                  {PAISES.map((p) => (
-                    <option key={p} value={p} style={{ background: "#0D1535" }}>{p}</option>
-                  ))}
-                </select>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">Correo de contacto *</label>
+                <input type="email" name="correo" required value={form.correo} onChange={handleChange} placeholder="juan@empresa.com" className={inputClass} />
               </div>
 
-              {/* Row 4: Mensaje */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
-                  Mensaje *
-                </label>
-                <textarea
-                  name="mensaje" required rows={4}
-                  value={form.mensaje} onChange={handleChange}
-                  placeholder="Cuéntanos en qué podemos ayudarte..."
-                  className={inputClass}
-                  style={{ resize: "vertical" }}
-                />
+              {/* País + Servicio */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">País *</label>
+                  <select name="pais" required value={form.pais} onChange={handleChange} className={inputClass} style={{ appearance: "none" }}>
+                    <option value="" disabled>Selecciona tu país</option>
+                    {PAISES.map((p) => (
+                      <option key={p} value={p} style={{ background: "#0D1535" }}>{p}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">Servicio de interés *</label>
+                  <select name="servicio" required value={form.servicio} onChange={handleChange} className={inputClass} style={{ appearance: "none" }}>
+                    <option value="" disabled>Selecciona un servicio</option>
+                    {SERVICIOS.map((s) => (
+                      <option key={s} value={s} style={{ background: "#0D1535" }}>{s}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              {/* Error */}
+              {/* Mensaje */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">Mensaje *</label>
+                <textarea name="mensaje" required rows={4} value={form.mensaje} onChange={handleChange} placeholder="Cuéntanos en qué podemos ayudarte..." className={inputClass} style={{ resize: "vertical" }} />
+              </div>
+
               {status === "error" && (
                 <p className="text-sm text-red-400 font-medium">❌ {errorMsg}</p>
               )}
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={status === "loading"}
@@ -227,9 +196,7 @@ export default function CotizarPage() {
                     </svg>
                     Enviando…
                   </span>
-                ) : (
-                  "Enviar solicitud →"
-                )}
+                ) : "Enviar solicitud →"}
               </button>
             </form>
           )}

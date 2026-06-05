@@ -21,9 +21,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { nombre, empresa, cargo, telefono, pais, mensaje } = await req.json();
+    const { nombre, empresa, cargo, correo, telefono, pais, servicio, mensaje } = await req.json();
 
-    if (!nombre || !empresa || !cargo || !telefono || !pais || !mensaje) {
+    if (!nombre || !empresa || !cargo || !correo || !telefono || !pais || !servicio || !mensaje) {
       return NextResponse.json({ error: "Todos los campos son requeridos." }, { status: 400 });
     }
 
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     await transporter.sendMail({
       from: `"TALK Digital Insights" <${process.env.SMTP_USER}>`,
       to: DEST,
-      subject: `Nueva cotización de ${nombre} — ${empresa}`,
+      subject: `Nueva cotización de ${nombre} — ${empresa} (${servicio})`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f9fafb;border-radius:12px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#FF1493,#00B4D8);padding:28px 32px;">
@@ -47,8 +47,10 @@ export async function POST(req: NextRequest) {
                 ["Nombre", nombre],
                 ["Empresa", empresa],
                 ["Cargo", cargo],
+                ["Correo", correo],
                 ["Teléfono", telefono],
                 ["País", pais],
+                ["Servicio", servicio],
               ].map(([label, value]) => `
                 <tr>
                   <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;width:35%;font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">${label}</td>
