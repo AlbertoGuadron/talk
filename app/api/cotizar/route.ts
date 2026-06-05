@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
-const DEST = "aguadron@digitalinsightsla.com";
+const DEST = [
+  "aguadron@digitalinsightsla.com",
+  "albertoguadron@gmail.com", // ← cambia este por el correo que quieras agregar
+];
 
 function createTransporter() {
   return nodemailer.createTransport({
