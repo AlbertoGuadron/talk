@@ -5,16 +5,18 @@ const DEST = "aguadron@digitalinsightsla.com";
 
 function createTransporter() {
   return nodemailer.createTransport({
-    service: "gmail",
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT ?? 587),
+    secure: Number(process.env.SMTP_PORT) === 465, // true for port 465, false for 587
     auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD,
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
     },
   });
 }
 
 export async function POST(req: NextRequest) {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
     return NextResponse.json({ error: "Email no configurado en el servidor." }, { status: 500 });
   }
 
@@ -28,7 +30,7 @@ export async function POST(req: NextRequest) {
     const transporter = createTransporter();
 
     await transporter.sendMail({
-      from: `"TALK Digital Insights" <${process.env.GMAIL_USER}>`,
+      from: `"TALK Digital Insights" <${process.env.SMTP_USER}>`,
       to: DEST,
       subject: `Nueva cotización de ${nombre} — ${empresa}`,
       html: `
