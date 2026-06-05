@@ -3,7 +3,8 @@ import nodemailer from "nodemailer";
 
 const DEST = [
   "aguadron@digitalinsightsla.com",
-  "albertoguadron@gmail.com", // ← cambia este por el correo que quieras agregar
+  "balvarez@digitalinsightsla.com",
+  "pamaya@digitalinsightsla.com", // ← cambia este por el correo que quieras agregar
 ];
 
 function createTransporter() {
