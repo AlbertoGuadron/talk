@@ -64,7 +64,7 @@ export default function Navbar() {
             className="hidden sm:inline-flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-full transition-all duration-200 hover:opacity-90 hover:scale-105"
             style={{ background: "linear-gradient(135deg,#FF1493,#00B4D8)", color: "#fff" }}
           >
-            Cotízanos
+            Haz tu cotización
           </Link>
 
           {/* Mobile menu toggle placeholder */}
