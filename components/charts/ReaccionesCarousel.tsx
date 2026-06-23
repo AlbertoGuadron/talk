@@ -33,7 +33,7 @@ function SlideImg({ src, color }: { src?: string; color: string }) {
     <img
       src={src}
       alt=""
-      className="w-full h-full object-cover"
+      className="w-full h-full object-contain p-8"
       onError={() => setErr(true)}
     />
   );
@@ -112,7 +112,7 @@ export default function ReaccionesCarousel({
       {/* ── Slide principal ──────────────────────────────── */}
       <div
         className="relative w-full overflow-hidden"
-        style={{ height: 460 }}
+        style={{ height: 320 }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
