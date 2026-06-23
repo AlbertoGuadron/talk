@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import type { TalkSlug } from "@/types";
 
 // Allow up to 60 s for image downloads (Vercel Pro / Hobby max)
@@ -32,7 +32,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── 2. Mark all pages as stale so next visit serves fresh data ────────────
+  // ── 2. Invalida el data cache y las páginas ────────────────────────────────
+  revalidateTag("talk-data"); // limpia unstable_cache de getTalkData
   for (const slug of SLUGS) {
     revalidatePath(`/${slug}`, "page");
   }

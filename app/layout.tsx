@@ -18,7 +18,10 @@ export default function RootLayout({
     <html lang="es" className="h-full">
       <body className={`${inter.variable} min-h-full antialiased`} style={{ background: "#060B1F" }}>
         <Navbar />
-        {children}
+        {/* pt-14 extra en móvil para que la barra CTA fija debajo del navbar no tape el contenido */}
+        <div className="pt-14 sm:pt-0">
+          {children}
+        </div>
         <Footer />
       </body>
     </html>
