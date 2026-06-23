@@ -101,9 +101,6 @@ function PostCard({ post, color }: { post: PostData; color: string }) {
           </span>
         </div>
 
-        {/* Brand */}
-        <p className="font-bold text-white text-sm leading-tight">{post.profile}</p>
-
         {/* Category */}
         {post.categoria && (
           <span

@@ -211,8 +211,7 @@ export function buildDashboardData(
     .slice(0, 10)
     .map((p) => ({ name: p.profile, value: p.publicaciones, network: p.network, fill: color }));
 
-  // Top 10 reacciones: aggregate by brand (sum all platforms),
-  // use the image from the platform with the highest engagement
+  // Top 10 reacciones: aggregate by brand (legacy, kept for compat)
   const topReacciones: ChartDataPoint[] = (() => {
     const map: Record<string, { total: number; bestImg: string; bestEng: number }> = {};
     for (const p of profiles) {
@@ -231,6 +230,27 @@ export function buildDashboardData(
         name, value: total, fill: color, imageLink: bestImg,
       }));
   })();
+
+  // Carousel: top categories by engagement — use image from top brand per category
+  const carouselItems: ChartDataPoint[] = hasCategoria ? (() => {
+    const map: Record<string, { total: number; bestImg: string; bestEng: number }> = {};
+    for (const p of profiles) {
+      if (p.engagement <= 0) continue;
+      const cat = toTitleCase(p.categoria || "Sin Categoría");
+      if (!map[cat]) map[cat] = { total: 0, bestImg: "", bestEng: 0 };
+      map[cat].total += p.engagement;
+      if (p.engagement > map[cat].bestEng) {
+        map[cat].bestEng = p.engagement;
+        map[cat].bestImg = p.imageLink || "";
+      }
+    }
+    return Object.entries(map)
+      .sort(([, a], [, b]) => b.total - a.total)
+      .slice(0, 10)
+      .map(([name, { total, bestImg }]) => ({
+        name, value: total, fill: color, imageLink: bestImg,
+      }));
+  })() : [];
 
   const topSeguidores: ChartDataPoint[] = profiles
     .filter((p) => p.seguidores > 0)
@@ -252,11 +272,15 @@ export function buildDashboardData(
     ? buildCategoriaSum(profiles, "seguidores", color)
     : undefined;
 
+  const totalSeguidores = profiles.reduce((s, p) => s + p.seguidores, 0);
+  const totalReacciones = profiles.reduce((s, p) => s + p.engagement, 0);
+
   const stats = {
     totalPerfiles: profiles.length,
-    totalSeguidores: profiles.reduce((s, p) => s + p.seguidores, 0),
+    totalSeguidores,
     totalPublicaciones: profiles.reduce((s, p) => s + p.publicaciones, 0),
-    totalReacciones: profiles.reduce((s, p) => s + p.engagement, 0),
+    totalReacciones,
+    engagementRate: totalSeguidores > 0 ? (totalReacciones / totalSeguidores) * 100 : 0,
   };
 
   return {
@@ -265,6 +289,7 @@ export function buildDashboardData(
     topPublicaciones,
     topReacciones,
     topSeguidores,
+    carouselItems,
     porRedPublicaciones,
     porRedReacciones,
     porRedSeguidores,

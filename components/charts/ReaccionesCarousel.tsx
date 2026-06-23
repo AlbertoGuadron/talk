@@ -7,6 +7,8 @@ import { NETWORK_COLORS } from "@/lib/talks-config";
 interface Props {
   data: ChartDataPoint[];
   color: string;
+  title?: string;
+  subtitle?: string;
 }
 
 const NETWORK_ICONS: Record<string, string> = {
@@ -43,7 +45,7 @@ function ThumbImg({ src, network, color }: { src?: string; network?: string; col
   return <img src={src} alt="" className="w-full h-full object-cover" onError={() => setErr(true)} />;
 }
 
-export default function ReaccionesCarousel({ data, color }: Props) {
+export default function ReaccionesCarousel({ data, color, title = "Top 10 Reacciones del Mes", subtitle = "Perfiles con mayor engagement" }: Props) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused]   = useState(false);
   const [tilt, setTilt]       = useState({ x: 0, y: 0 });
@@ -136,8 +138,8 @@ export default function ReaccionesCarousel({ data, color }: Props) {
       <div className="flex items-center justify-between px-5 pt-4 pb-3"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div>
-          <h3 className="font-bold text-white text-base">Top 10 Reacciones del Mes</h3>
-          <p className="text-slate-500 text-xs mt-0.5">Perfiles con mayor engagement</p>
+          <h3 className="font-bold text-white text-base">{title}</h3>
+          <p className="text-slate-500 text-xs mt-0.5">{subtitle}</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={prev}

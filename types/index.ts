@@ -59,10 +59,12 @@ export interface ChartDataPoint {
 export interface TalkDashboardData {
   meta: TalkMeta;
   profiles: ProfileData[];
-  // Top 10 rankings
+  // Top 10 rankings (legacy, not displayed)
   topPublicaciones: ChartDataPoint[];
   topReacciones: ChartDataPoint[];
   topSeguidores: ChartDataPoint[];
+  // Carousel: top categories by engagement (empty for Housetalk)
+  carouselItems: ChartDataPoint[];
   // Por plataforma (sumas)
   porRedPublicaciones: ChartDataPoint[];
   porRedReacciones: ChartDataPoint[];
@@ -77,5 +79,6 @@ export interface TalkDashboardData {
     totalSeguidores: number;
     totalPublicaciones: number;
     totalReacciones: number;
+    engagementRate: number;
   };
 }
