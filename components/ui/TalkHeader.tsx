@@ -64,7 +64,7 @@ export default function TalkHeader({ config, meta }: Props) {
               >
                 {meta.mes}
               </span>
-              <span className="text-xs text-slate-500">Ranking mensuak</span>
+              <span className="text-xs text-slate-500">Ranking mensual</span>
             </div>
             <p className="text-slate-400 text-sm mb-0">{meta.subtitulo}</p>
           </div>
