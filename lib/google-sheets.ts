@@ -91,7 +91,9 @@ export async function getTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
   // Cache post images to Vercel Blob so they don't expire
   if (process.env.BLOB_READ_WRITE_TOKEN) {
     const { syncPostImages } = await import("./image-cache");
-    posts = await syncPostImages(posts, slug);
+    const result = await syncPostImages(posts, slug);
+    posts = result.posts;
+    console.log(`[image-cache] ${slug}:`, result.stats);
   }
 
   return buildDashboardData(slug, profiles, meta, posts);

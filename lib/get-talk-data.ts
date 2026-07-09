@@ -8,29 +8,25 @@ const DEFAULT_META: Record<TalkSlug, TalkMeta> = {
     titulo: "Foodtalk",
     subtitulo: "Ranking de presencia en redes sociales",
     mes: "Abril 2026",
-    analisis:
-      "Análisis del mes de Abril 2026. Edita este texto desde el panel de administrador.",
+    analisis: "Análisis del mes de Abril 2026. Edita este texto desde el panel de administrador.",
   },
   housetalk: {
     titulo: "Housetalk",
     subtitulo: "Ranking de presencia en redes sociales",
     mes: "Abril 2026",
-    analisis:
-      "Análisis del mes de Abril 2026. Edita este texto desde el panel de administrador.",
+    analisis: "Análisis del mes de Abril 2026. Edita este texto desde el panel de administrador.",
   },
   markettalk: {
     titulo: "Markettalk",
     subtitulo: "Ranking de presencia en redes sociales",
     mes: "Abril 2026",
-    analisis:
-      "Análisis del mes de Abril 2026. Edita este texto desde el panel de administrador.",
+    analisis: "Análisis del mes de Abril 2026. Edita este texto desde el panel de administrador.",
   },
   retailtalk: {
     titulo: "Retailtalk",
     subtitulo: "Ranking de presencia en redes sociales",
     mes: "Abril 2026",
-    analisis:
-      "Análisis del mes de Abril 2026. Edita este texto desde el panel de administrador.",
+    analisis: "Análisis del mes de Abril 2026. Edita este texto desde el panel de administrador.",
   },
 };
 
@@ -45,27 +41,31 @@ async function fetchTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
     return getSheetsData(slug);
   }
 
-  // Demo mode: load from JSON files
   const demoData = await import(`./demo-data/${slug}.json`);
   const profiles = demoData.default as ProfileData[];
   const meta = DEFAULT_META[slug];
   return buildDashboardData(slug, profiles, meta);
 }
 
-// Cache separado por slug — primera carga es lenta (Google Sheets),
-// las siguientes son instantáneas hasta que el admin publique cambios.
-const _cachedFoodtalk   = unstable_cache(() => fetchTalkData("foodtalk"),   ["talk-data-foodtalk"],   { revalidate: false, tags: ["talk-data"] });
-const _cachedHousetalk  = unstable_cache(() => fetchTalkData("housetalk"),  ["talk-data-housetalk"],  { revalidate: false, tags: ["talk-data"] });
-const _cachedMarkettalk = unstable_cache(() => fetchTalkData("markettalk"), ["talk-data-markettalk"], { revalidate: false, tags: ["talk-data"] });
-const _cachedRetailtalk = unstable_cache(() => fetchTalkData("retailtalk"), ["talk-data-retailtalk"], { revalidate: false, tags: ["talk-data"] });
+// En DEV: unstable_cache evita llamadas repetidas a Google Sheets (5 min TTL).
+// En PRODUCCIÓN: se llama directamente — el ISR de la página maneja el caching,
+// y syncPostImages puede correr en cada revalidación del admin sin quedar bloqueado.
+const _devCached: Partial<Record<TalkSlug, () => Promise<TalkDashboardData>>> = {};
 
-const CACHED: Record<TalkSlug, () => Promise<TalkDashboardData>> = {
-  foodtalk:   _cachedFoodtalk,
-  housetalk:  _cachedHousetalk,
-  markettalk: _cachedMarkettalk,
-  retailtalk: _cachedRetailtalk,
-};
+function getDevCached(slug: TalkSlug) {
+  if (!_devCached[slug]) {
+    _devCached[slug] = unstable_cache(
+      () => fetchTalkData(slug),
+      [`talk-data-${slug}`],
+      { revalidate: 300 } // 5 minutos en dev
+    );
+  }
+  return _devCached[slug]!;
+}
 
 export function getTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
-  return CACHED[slug]();
+  if (process.env.NODE_ENV === "development") {
+    return getDevCached(slug)();
+  }
+  return fetchTalkData(slug);
 }

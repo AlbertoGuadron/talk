@@ -13,26 +13,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // ── 1. Fetch fresh data + sync images to Blob RIGHT NOW ───────────────────
-  //    (not lazily on next page visit — this ensures images are downloaded
-  //     while CDN URLs are still valid)
-  if (
-    process.env.BLOB_READ_WRITE_TOKEN &&
-    process.env.GOOGLE_SPREADSHEET_ID &&
-    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
-    process.env.GOOGLE_PRIVATE_KEY
-  ) {
-    try {
-      const { getTalkData } = await import("@/lib/get-talk-data");
-      await Promise.allSettled(SLUGS.map((s) => getTalkData(s)));
-      console.log("Image sync completed for all talks");
-    } catch (e) {
-      console.error("Image sync error:", e);
-      // Non-fatal — revalidation continues regardless
-    }
-  }
-
-  // ── 2. Invalida el cache de páginas ───────────────────────────────────────
+  // Invalida el cache de todas las páginas.
+  // La próxima visita a cada /talk regenerará la página, llamará a syncPostImages
+  // y guardará las imágenes en Blob (mientras las CDN URLs todavía sean válidas).
   for (const slug of SLUGS) {
     revalidatePath(`/${slug}`, "page");
   }
