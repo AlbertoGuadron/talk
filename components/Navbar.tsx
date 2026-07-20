@@ -91,12 +91,16 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setCountryOpen((v) => !v)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/8"
-                  style={{ border: "1px solid rgba(255,255,255,0.10)", color: "#cbd5e1" }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:bg-white/10"
+                  style={{
+                    border: "1.5px solid rgba(99,102,241,0.5)",
+                    color: "#e2e8f0",
+                    background: currentCountry ? "rgba(99,102,241,0.12)" : "transparent",
+                  }}
                 >
-                  <span className="text-base">{currentCountry?.flag ?? "🌎"}</span>
-                  <span className="hidden sm:block">{currentCountry?.name ?? "País"}</span>
-                  <svg className="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="text-lg leading-none">{currentCountry?.flag ?? "🌎"}</span>
+                  <span>{currentCountry?.name ?? "Seleccionar país"}</span>
+                  <svg className="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
