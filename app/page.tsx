@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { TALKS } from "@/lib/talks-config";
+import { COUNTRIES } from "@/lib/countries-config";
 import NetworkCanvas from "@/components/NetworkCanvas";
 import TalkCard from "@/components/ui/TalkCard";
 
@@ -147,7 +148,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── TALKS GRID ───────────────────────────────────── */}
+      {/* ── SELECTOR DE PAÍS ─────────────────────────────── */}
       <section
         className="section-dark relative py-24 px-4 overflow-hidden"
       >
@@ -156,21 +157,46 @@ export default function Home() {
         <div className="relative z-10 max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-xs font-bold tracking-widest uppercase text-slate-500 mb-3">
-              Nuestra cobertura
+              Cobertura regional
             </p>
             <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
-              Market Research{" "}
-              <span className="text-gradient">Permanente</span>
+              Selecciona tu{" "}
+              <span className="text-gradient">País</span>
             </h2>
             <p className="text-slate-400 max-w-xl mx-auto text-sm">
-              Cada Talk es un estudio de mercado continuo para una industria específica.
+              Disponible en El Salvador, Honduras y Guatemala. Elige tu mercado para ver los rankings.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {TALKS.map((talk, i) => (
-              <TalkCard key={talk.slug} talk={talk} delay={(i + 1) * 100} />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto mb-16">
+            {COUNTRIES.map((country) => (
+              <Link
+                key={country.code}
+                href={`/${country.code}`}
+                className="glass rounded-2xl p-7 text-center hover:scale-[1.04] transition-all duration-300 group"
+                style={{ border: "1px solid rgba(255,255,255,0.07)" }}
+              >
+                <div className="text-5xl mb-3">{country.flag}</div>
+                <h3 className="text-white font-black text-lg mb-1">{country.name}</h3>
+                <p className="text-slate-500 text-xs mb-4">
+                  {country.talks.length} Talk{country.talks.length !== 1 ? "s" : ""} disponibles
+                </p>
+                <span className="text-xs font-bold tracking-wider uppercase text-indigo-400 group-hover:text-indigo-300 transition-colors">
+                  Ver rankings →
+                </span>
+              </Link>
             ))}
+          </div>
+
+          <div className="text-center mb-10">
+            <p className="text-xs font-bold tracking-widest uppercase text-slate-600 mb-8">
+              El Salvador — Talks disponibles
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {TALKS.map((talk, i) => (
+                <TalkCard key={talk.slug} talk={talk} delay={(i + 1) * 100} />
+              ))}
+            </div>
           </div>
 
         </div>
