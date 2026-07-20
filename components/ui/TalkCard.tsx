@@ -8,14 +8,15 @@ import type { TalkConfig } from "@/types";
 interface Props {
   talk: TalkConfig;
   delay?: number;
+  href?: string;
 }
 
-export default function TalkCard({ talk, delay = 0 }: Props) {
+export default function TalkCard({ talk, delay = 0, href }: Props) {
   const [hovered, setHovered] = useState(false);
 
   return (
     <Link
-      href={`/${talk.slug}`}
+      href={href ?? `/${talk.slug}`}
       className={`group glass rounded-3xl overflow-hidden transition-all duration-300 animate-fade-up`}
       style={{
         border: hovered ? `1px solid ${talk.color}44` : "1px solid rgba(255,255,255,0.08)",
