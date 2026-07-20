@@ -1,15 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { TALKS } from "@/lib/talks-config";
 import { COUNTRIES } from "@/lib/countries-config";
 import NetworkCanvas from "@/components/NetworkCanvas";
-import TalkCard from "@/components/ui/TalkCard";
-
-const STATS = [
-  { label: "Talks activos", value: "4+", icon: "📊" },
-  { label: "Disponible", value: "24/7", icon: "⚡" },
-  { label: "Actualización", value: "Mensual", icon: "🔄" },
-];
 
 const FEATURES = [
   {
@@ -27,28 +19,21 @@ const FEATURES = [
 export default function Home() {
   return (
     <div>
-      {/* ── HERO ──────────────────────────────────────────── */}
-      <section className="hero-bg relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-20">
+      {/* ── HERO + SELECTOR DE PAÍS ───────────────────────── */}
+      <section className="hero-bg relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-20 pb-16">
         <NetworkCanvas className="opacity-60" dotCount={65} color="99,102,241" />
 
-        {/* Decorative orbs */}
         <div
           className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full pointer-events-none"
-          style={{
-            background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)",
-            filter: "blur(40px)",
-          }}
+          style={{ background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)", filter: "blur(40px)" }}
         />
         <div
           className="absolute bottom-1/3 right-1/4 w-64 h-64 rounded-full pointer-events-none"
-          style={{
-            background: "radial-gradient(circle, rgba(236,72,153,0.1) 0%, transparent 70%)",
-            filter: "blur(40px)",
-          }}
+          style={{ background: "radial-gradient(circle, rgba(236,72,153,0.1) 0%, transparent 70%)", filter: "blur(40px)" }}
         />
 
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          {/* Main logo */}
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto w-full">
+          {/* Logo */}
           <div className="animate-fade-up flex justify-center mb-6">
             <div className="animate-float-slow">
               <Image
@@ -56,57 +41,51 @@ export default function Home() {
                 alt="TALK Digital Insights"
                 width={480}
                 height={144}
-                className="w-80 sm:w-[420px] md:w-[560px] h-auto drop-shadow-2xl"
+                className="w-72 sm:w-[380px] md:w-[480px] h-auto drop-shadow-2xl"
                 priority
               />
             </div>
           </div>
 
-          {/* Subtitle */}
-          <p
-            className="animate-fade-up delay-200 text-slate-300 text-lg md:text-xl max-w-xl mx-auto leading-relaxed mb-4"
-          >
+          <p className="animate-fade-up delay-200 text-slate-300 text-lg md:text-xl max-w-xl mx-auto leading-relaxed mb-10">
             Inteligencia de mercado permanente para marcas que quieren liderar el mundo digital.
           </p>
 
-          {/* Stats badges */}
-          <div className="animate-fade-up delay-300 flex flex-wrap gap-3 justify-center mt-8 mb-10">
-            {STATS.map((s) => (
-              <div
-                key={s.label}
-                className="glass rounded-full px-5 py-2.5 flex items-center gap-2.5"
-              >
-                <span className="text-lg">{s.icon}</span>
-                <div className="text-left">
-                  <p className="text-xs text-slate-400 leading-none">{s.label}</p>
-                  <p className="text-sm font-bold text-white leading-tight">{s.value}</p>
-                </div>
-              </div>
-            ))}
+          {/* Selector de país */}
+          <div className="animate-fade-up delay-300">
+            <p className="text-xs font-bold tracking-widest uppercase text-slate-500 mb-6">
+              Selecciona tu país
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+              {COUNTRIES.map((country) => (
+                <Link
+                  key={country.code}
+                  href={`/${country.code}`}
+                  className="glass rounded-2xl p-6 text-center hover:scale-[1.04] transition-all duration-300 group"
+                  style={{ border: "1px solid rgba(255,255,255,0.09)" }}
+                >
+                  <div className="text-5xl mb-3">{country.flag}</div>
+                  <h3 className="text-white font-black text-base mb-1">{country.name}</h3>
+                  <p className="text-slate-500 text-xs mb-3">
+                    {country.talks.length} Talk{country.talks.length !== 1 ? "s" : ""} disponibles
+                  </p>
+                  <span className="text-xs font-bold tracking-wider uppercase text-indigo-400 group-hover:text-indigo-300 transition-colors">
+                    Ver rankings →
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
 
-          {/* CTA buttons */}
-          <div className="animate-fade-up delay-400 flex flex-wrap gap-3 justify-center">
-            <Link
-              href="/foodtalk"
-              className="inline-flex items-center gap-2 px-8 py-3 rounded-full font-bold text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
-              style={{
-                background: "linear-gradient(135deg, #6366F1, #EC4899)",
-                color: "white",
-                boxShadow: "0 0 24px rgba(99,102,241,0.4)",
-              }}
-            >
-              Ver Rankings →
-            </Link>
+          <div className="mt-10">
             <Link
               href="#que-es"
-              className="glass inline-flex items-center gap-2 px-8 py-3 rounded-full font-semibold text-sm text-slate-200 hover:text-white transition-all duration-200 hover:bg-white/10"
+              className="glass inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm text-slate-400 hover:text-white transition-all hover:bg-white/10"
             >
-              Conocer más
+              Conocer más ↓
             </Link>
           </div>
         </div>
-
       </section>
 
       {/* ── QUÉ ES TALK ──────────────────────────────────── */}
@@ -148,72 +127,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── SELECTOR DE PAÍS ─────────────────────────────── */}
-      <section
-        className="section-dark relative py-24 px-4 overflow-hidden"
-      >
-        <NetworkCanvas className="opacity-30" dotCount={40} color="6,182,212" />
-
-        <div className="relative z-10 max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="text-xs font-bold tracking-widest uppercase text-slate-500 mb-3">
-              Cobertura regional
-            </p>
-            <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
-              Selecciona tu{" "}
-              <span className="text-gradient">País</span>
-            </h2>
-            <p className="text-slate-400 max-w-xl mx-auto text-sm">
-              Disponible en El Salvador, Honduras y Guatemala. Elige tu mercado para ver los rankings.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto mb-16">
-            {COUNTRIES.map((country) => (
-              <Link
-                key={country.code}
-                href={`/${country.code}`}
-                className="glass rounded-2xl p-7 text-center hover:scale-[1.04] transition-all duration-300 group"
-                style={{ border: "1px solid rgba(255,255,255,0.07)" }}
-              >
-                <div className="text-5xl mb-3">{country.flag}</div>
-                <h3 className="text-white font-black text-lg mb-1">{country.name}</h3>
-                <p className="text-slate-500 text-xs mb-4">
-                  {country.talks.length} Talk{country.talks.length !== 1 ? "s" : ""} disponibles
-                </p>
-                <span className="text-xs font-bold tracking-wider uppercase text-indigo-400 group-hover:text-indigo-300 transition-colors">
-                  Ver rankings →
-                </span>
-              </Link>
-            ))}
-          </div>
-
-          <div className="text-center mb-10">
-            <p className="text-xs font-bold tracking-widest uppercase text-slate-600 mb-8">
-              El Salvador — Talks disponibles
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {TALKS.map((talk, i) => (
-                <TalkCard key={talk.slug} talk={talk} delay={(i + 1) * 100} />
-              ))}
-            </div>
-          </div>
-
-        </div>
-      </section>
-
       {/* ── CTA ──────────────────────────────────────────── */}
       <section
         className="relative py-24 px-4 overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, #0D1535 0%, #1a0a3d 50%, #0a1528 100%)",
-        }}
+        style={{ background: "linear-gradient(135deg, #0D1535 0%, #1a0a3d 50%, #0a1528 100%)" }}
       >
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{
-            background: "radial-gradient(ellipse at 50% 50%, rgba(99,102,241,0.08) 0%, transparent 70%)",
-          }}
+          style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(99,102,241,0.08) 0%, transparent 70%)" }}
         />
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-5xl font-black text-white mb-4 leading-tight">
@@ -224,22 +145,19 @@ export default function Home() {
           <p className="text-slate-400 mb-10 text-lg">
             Accede a los rankings y descubre dónde está tu marca frente a la competencia.
           </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link
-              href="/foodtalk"
-              className="inline-flex items-center gap-2 px-10 py-4 rounded-full font-bold transition-all duration-300 hover:scale-105"
-              style={{
-                background: "linear-gradient(135deg, #6366F1, #EC4899)",
-                color: "white",
-                boxShadow: "0 0 32px rgba(99,102,241,0.4)",
-              }}
-            >
-              Explorar Rankings
-            </Link>
-          </div>
+          <Link
+            href="/cotizar"
+            className="inline-flex items-center gap-2 px-10 py-4 rounded-full font-bold transition-all duration-300 hover:scale-105"
+            style={{
+              background: "linear-gradient(135deg, #6366F1, #EC4899)",
+              color: "white",
+              boxShadow: "0 0 32px rgba(99,102,241,0.4)",
+            }}
+          >
+            Haz tu cotización
+          </Link>
         </div>
       </section>
-
     </div>
   );
 }
