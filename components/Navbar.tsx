@@ -146,7 +146,7 @@ export default function Navbar() {
                 className="hidden sm:inline-flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-full transition-all duration-200 hover:opacity-90 hover:scale-105"
                 style={{ background: "linear-gradient(135deg,#FF1493,#00B4D8)", color: "#fff" }}
               >
-                Haz tu cotización
+                Agendá una demo
               </Link>
 
               {/* Hamburger — móvil */}
@@ -227,7 +227,7 @@ export default function Navbar() {
           className="flex items-center justify-center w-full text-sm font-bold py-3 rounded-2xl transition-all hover:opacity-90 active:scale-[0.98]"
           style={{ background: "linear-gradient(135deg,#FF1493,#00B4D8)", color: "#fff" }}
         >
-          Haz tu cotización
+          Agendá una demo
         </Link>
       </div>
     </>

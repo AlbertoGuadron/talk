@@ -9,11 +9,6 @@ interface Props {
 }
 
 export default function TalkHeader({ config, meta }: Props) {
-  const [c1, c2] = config.bgGradient
-    .replace("from-", "").replace("to-", "").replace("via-", "")
-    .split(" ").filter((s) => s.startsWith("["))
-    .map((s) => s.replace(/[\[\]]/g, ""));
-
   return (
     <div
       className="relative rounded-3xl overflow-hidden mb-8"
@@ -28,7 +23,6 @@ export default function TalkHeader({ config, meta }: Props) {
         color={hexToRgb(config.color)}
       />
 
-      {/* Glow blob */}
       <div
         className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none"
         style={{
@@ -40,7 +34,6 @@ export default function TalkHeader({ config, meta }: Props) {
 
       <div className="relative z-10 p-8 md:p-10">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          {/* Logo */}
           <div className="flex-shrink-0">
             <Image
               src={TALK_LOGOS[config.slug]}
@@ -51,7 +44,6 @@ export default function TalkHeader({ config, meta }: Props) {
             />
           </div>
 
-          {/* Info */}
           <div className="flex-1">
             <div className="flex items-center gap-3 flex-wrap mb-2">
               <span
@@ -65,29 +57,19 @@ export default function TalkHeader({ config, meta }: Props) {
                 {meta.mes}
               </span>
               <span className="text-xs text-slate-500">Ranking mensual</span>
+              <a
+                href="#metodologia"
+                className="text-xs text-slate-500 hover:text-slate-300 transition-colors underline underline-offset-2"
+              >
+                Ver metodología
+              </a>
             </div>
-            <p className="text-slate-400 text-sm mb-0">{meta.subtitulo}</p>
+            <p className="text-slate-400 text-sm">{meta.subtitulo}</p>
           </div>
         </div>
-
-        {/* Analysis */}
-        {meta.analisis && (
-          <div
-            className="mt-6 pt-6 border-t text-sm leading-relaxed text-slate-300"
-            style={{ borderColor: "rgba(255,255,255,0.08)" }}
-          >
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: config.color }}>
-              Análisis del mes
-            </p>
-            <p>{meta.analisis}</p>
-          </div>
-        )}
       </div>
 
-      {/* Bottom color line */}
-      <div
-        className={`h-1 w-full bg-gradient-to-r ${config.bgGradient}`}
-      />
+      <div className={`h-1 w-full bg-gradient-to-r ${config.bgGradient}`} />
     </div>
   );
 }

@@ -8,12 +8,12 @@ export default function Home() {
     <div className="min-h-screen flex flex-col md:flex-row">
 
       {/* ── LADO IZQUIERDO — Branding ─────────────────────── */}
-      <div className="relative flex-1 flex flex-col items-center justify-center min-h-[45vh] md:min-h-screen overflow-hidden"
+      <div
+        className="relative flex-1 flex flex-col items-center justify-center min-h-[55vh] md:min-h-screen overflow-hidden"
         style={{ background: "linear-gradient(135deg, #060B1F 0%, #0D1535 50%, #1a0a3d 100%)" }}
       >
         <NetworkCanvas className="opacity-50" dotCount={55} color="99,102,241" />
 
-        {/* Orbs decorativos */}
         <div className="absolute top-1/4 left-1/3 w-72 h-72 rounded-full pointer-events-none"
           style={{ background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)", filter: "blur(50px)" }}
         />
@@ -21,8 +21,8 @@ export default function Home() {
           style={{ background: "radial-gradient(circle, rgba(236,72,153,0.12) 0%, transparent 70%)", filter: "blur(40px)" }}
         />
 
-        <div className="relative z-10 text-center px-8 py-16 md:py-0">
-          <div className="animate-float-slow">
+        <div className="relative z-10 text-center px-8 py-16 md:py-0 max-w-md">
+          <div className="animate-float-slow mb-6">
             <Image
               src="/galeria/logotalk.png"
               alt="TALK Digital Insights"
@@ -32,10 +32,36 @@ export default function Home() {
               priority
             />
           </div>
-          <p className="mt-6 text-slate-300 text-base md:text-lg max-w-sm mx-auto leading-relaxed">
-            Inteligencia de mercado permanente para marcas que quieren liderar el mundo digital.
+
+          <h1 className="text-2xl md:text-3xl font-black text-white mb-3 leading-tight">
+            El mercado ya se está moviendo.{" "}
+            <span className="text-gradient">Descubrí quién está ganando</span> y por qué.
+          </h1>
+          <p className="text-slate-400 text-sm md:text-base leading-relaxed mb-8">
+            Explorá rankings, tendencias e insights para entender el desempeño de tu categoría y detectar oportunidades para tu marca.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3 justify-center">
+
+          <div className="flex flex-wrap gap-3 justify-center mb-8">
+            <Link
+              href="/sv/foodtalk"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 hover:scale-105"
+              style={{
+                background: "linear-gradient(135deg, #6366F1, #EC4899)",
+                color: "white",
+                boxShadow: "0 0 20px rgba(99,102,241,0.4)",
+              }}
+            >
+              Ver demo del último mes
+            </Link>
+            <Link
+              href="#selector"
+              className="glass inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm text-slate-200 hover:text-white transition-all"
+            >
+              Explorar rankings →
+            </Link>
+          </div>
+
+          <div className="flex flex-wrap gap-2 justify-center">
             {[
               { label: "Países", value: "3" },
               { label: "Actualización", value: "Mensual" },
@@ -55,26 +81,16 @@ export default function Home() {
 
       {/* ── LADO DERECHO — Selector de país ───────────────── */}
       <div
+        id="selector"
         className="flex-1 flex flex-col items-center justify-center px-8 py-16"
         style={{ background: "#F8F9FC" }}
       >
         <div className="w-full max-w-sm">
-          <p className="text-slate-500 text-sm mb-2 text-center">Te damos la bienvenida a</p>
-          <div className="flex justify-center mb-2">
-            <Image
-              src="/galeria/logotalk.png"
-              alt="TALK"
-              width={160}
-              height={48}
-              className="h-10 w-auto"
-            />
-          </div>
-
-          <h2 className="text-2xl font-black text-slate-800 text-center mt-6 mb-1">
-            Estamos en Centroamérica
+          <h2 className="text-2xl font-black text-slate-800 text-center mb-2">
+            Elegí el mercado que querés explorar
           </h2>
           <p className="text-slate-500 text-sm text-center mb-8">
-            Selecciona tu país para ver los rankings de tu mercado
+            Accedé a los rankings del último mes y descubrí quién está liderando, qué contenidos están generando mayor impacto y dónde están las principales oportunidades.
           </p>
 
           <div className="grid grid-cols-1 gap-3">
@@ -98,6 +114,29 @@ export default function Home() {
                 </svg>
               </Link>
             ))}
+          </div>
+
+          {/* Rankings construidos con datos reales */}
+          <div className="mt-8 p-5 rounded-2xl" style={{ background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.15)" }}>
+            <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-3">
+              Rankings construidos con datos reales del mercado
+            </p>
+            <p className="text-xs text-slate-500 leading-relaxed mb-3">
+              TALK monitorea la actividad pública de marcas en redes sociales para identificar presencia, impacto y liderazgo por categoría.
+            </p>
+            <div className="grid grid-cols-1 gap-1.5">
+              {[
+                "Periodo: mes calendario",
+                "Fuentes: perfiles oficiales de las marcas",
+                "Plataformas: Facebook, Instagram, TikTok y más",
+                "Indicadores: publicaciones, seguidores, reacciones y engagement",
+              ].map((item) => (
+                <div key={item} className="flex items-start gap-2">
+                  <span className="text-indigo-400 mt-0.5">·</span>
+                  <span className="text-xs text-slate-500">{item}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

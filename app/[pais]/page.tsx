@@ -2,25 +2,17 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getCountryInfo, getCountryTalks } from "@/lib/countries-config";
+import { getCountryTalkData } from "@/lib/get-country-data";
+import type { CountryCode } from "@/lib/countries-config";
 import NetworkCanvas from "@/components/NetworkCanvas";
 import TalkCard from "@/components/ui/TalkCard";
+import type { TalkCardStats } from "@/components/ui/TalkCard";
+
+export const revalidate = false;
 
 interface Props {
   params: Promise<{ pais: string }>;
 }
-
-const FEATURES = [
-  {
-    icon: "📡",
-    title: "Datos en Tiempo Real",
-    desc: "Monitoreamos miles de perfiles en redes sociales para darte el panorama más actualizado del mercado digital.",
-  },
-  {
-    icon: "🎯",
-    title: "Claridad Estratégica",
-    desc: "Rankings claros por categoría, red social y métricas clave para tomar decisiones informadas con confianza.",
-  },
-];
 
 export default async function CountryPage({ params }: Props) {
   const { pais } = await params;
@@ -28,6 +20,28 @@ export default async function CountryPage({ params }: Props) {
   if (!country) notFound();
 
   const talks = getCountryTalks(pais);
+
+  // Fetch stats for all talks in parallel
+  const statsResults = await Promise.all(
+    talks.map(async (talk) => {
+      try {
+        const data = await getCountryTalkData(pais as CountryCode, talk.slug);
+        return {
+          slug: talk.slug,
+          stats: {
+            brands: data.stats.totalPerfiles,
+            posts: data.stats.totalPublicaciones,
+            reactions: data.stats.totalReacciones,
+            lastUpdate: data.meta.mes,
+          } satisfies TalkCardStats,
+        };
+      } catch {
+        return { slug: talk.slug, stats: undefined };
+      }
+    })
+  );
+
+  const statsMap = Object.fromEntries(statsResults.map((r) => [r.slug, r.stats]));
 
   return (
     <div>
@@ -70,8 +84,13 @@ export default async function CountryPage({ params }: Props) {
             </div>
           </div>
 
-          <p className="animate-fade-up delay-200 text-slate-300 text-lg md:text-xl max-w-xl mx-auto leading-relaxed mb-8">
-            Inteligencia de mercado permanente para marcas que quieren liderar el mundo digital en {country.name}.
+          <h1 className="animate-fade-up delay-150 text-2xl md:text-3xl font-black text-white mb-3 leading-tight">
+            El mercado ya se está moviendo.{" "}
+            <span className="text-gradient">Descubrí quién está ganando</span> y por qué.
+          </h1>
+
+          <p className="animate-fade-up delay-200 text-slate-300 text-base md:text-lg max-w-xl mx-auto leading-relaxed mb-8">
+            Explorá rankings, tendencias e insights para entender el desempeño de tu categoría en {country.name}.
           </p>
 
           {/* Stats badges */}
@@ -101,52 +120,62 @@ export default async function CountryPage({ params }: Props) {
                 boxShadow: "0 0 24px rgba(99,102,241,0.4)",
               }}
             >
-              Ver Rankings →
+              Ver rankings →
             </Link>
             <Link
               href="#cobertura"
               className="glass inline-flex items-center gap-2 px-8 py-3 rounded-full font-semibold text-sm text-slate-200 hover:text-white transition-all duration-200 hover:bg-white/10"
             >
-              Conocer más
+              Explorar rankings
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── QUÉ ES TALK ──────────────────────────────────── */}
+      {/* ── QUÉ MIDE TALK ────────────────────────────────── */}
       <section
         style={{ background: "linear-gradient(180deg, #0A1020 0%, #0D1535 100%)" }}
-        className="py-24 px-4"
+        className="py-20 px-4"
       >
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
+          <div className="text-center mb-12">
             <p className="text-xs font-bold tracking-widest uppercase text-slate-500 mb-3">
-              Sobre nosotros
+              Rankings construidos con datos reales del mercado
             </p>
-            <h2 className="text-3xl md:text-4xl font-black text-white mb-5">
-              ¿Qué es la Serie{" "}
+            <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
+              ¿Qué mide la Serie{" "}
               <span className="text-gradient">TALK</span>?
             </h2>
-            <p className="text-slate-400 max-w-2xl mx-auto text-base leading-relaxed">
-              La Serie TALK es una plataforma de inteligencia digital que monitorea y clasifica
-              marcas por su presencia en redes sociales. Datos reales, actualizados mensualmente,
-              por industria.
+            <p className="text-slate-400 max-w-2xl mx-auto text-sm leading-relaxed">
+              TALK monitorea la actividad pública de marcas en redes sociales para identificar presencia,
+              impacto, eficiencia de contenido y liderazgo por categoría.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {FEATURES.map((f, i) => (
-              <div
-                key={f.title}
-                className={`glass rounded-2xl p-7 hover:scale-[1.02] transition-all duration-300 ${
-                  i === 0 ? "animate-slide-left" : "animate-slide-right"
-                }`}
-              >
-                <div className="text-4xl mb-4">{f.icon}</div>
-                <h3 className="text-white font-bold text-lg mb-2">{f.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
+          {/* Metodología resumida */}
+          <div
+            className="rounded-2xl p-6 max-w-3xl mx-auto"
+            style={{ background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.18)" }}
+          >
+            <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-4">
+              Metodología resumida
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { label: "Periodo analizado", value: "Mes calendario" },
+                { label: "Fuentes", value: "Perfiles oficiales y públicos de las marcas" },
+                { label: "Plataformas", value: "Facebook, Instagram, TikTok y otras según disponibilidad" },
+                { label: "Indicadores", value: "Publicaciones, seguidores, reacciones, engagement y efectividad por contenido" },
+                { label: "Clasificación", value: "Marcas organizadas por industria, categoría y país" },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex items-start gap-2">
+                  <span className="text-indigo-400 text-xs font-bold min-w-[10px]">·</span>
+                  <span className="text-xs text-slate-400">
+                    <span className="text-slate-300 font-semibold">{label}:</span> {value}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -164,21 +193,30 @@ export default async function CountryPage({ params }: Props) {
               {country.flag} Nuestra cobertura en {country.name}
             </p>
             <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
-              Market Research{" "}
-              <span className="text-gradient">Permanente</span>
+              Elegí el mercado que querés{" "}
+              <span className="text-gradient">explorar</span>
             </h2>
             <p className="text-slate-400 max-w-xl mx-auto text-sm">
-              Cada Talk es un estudio de mercado continuo para una industria específica.
+              Accedé a los rankings del último mes y descubrí quién está liderando, qué contenidos están generando mayor impacto y dónde están las principales oportunidades.
             </p>
           </div>
 
-          <div className={`grid grid-cols-1 sm:grid-cols-2 ${talks.length >= 4 ? "lg:grid-cols-4" : talks.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2"} gap-6 mb-8`}>
+          <div
+            className={`grid grid-cols-1 sm:grid-cols-2 ${
+              talks.length >= 4
+                ? "lg:grid-cols-4"
+                : talks.length === 3
+                ? "lg:grid-cols-3"
+                : "lg:grid-cols-2"
+            } gap-6 mb-8`}
+          >
             {talks.map((talk, i) => (
               <TalkCard
                 key={talk.slug}
                 talk={talk}
                 delay={(i + 1) * 100}
                 href={`/${pais}/${talk.slug}`}
+                stats={statsMap[talk.slug]}
               />
             ))}
           </div>
@@ -196,16 +234,15 @@ export default async function CountryPage({ params }: Props) {
         />
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-5xl font-black text-white mb-4 leading-tight">
-            ¿Listo para llevar tu marca al{" "}
-            <span className="text-gradient">siguiente nivel</span>{" "}
-            en {country.name}?
+            ¿Querés conocer cómo se desempeña tu marca en{" "}
+            <span className="text-gradient">{country.name}</span>?
           </h2>
-          <p className="text-slate-400 mb-10 text-lg">
-            Accede a los rankings y descubre dónde está tu marca frente a la competencia.
+          <p className="text-slate-400 mb-10 text-base">
+            Cotizá un análisis personalizado con comparación competitiva, desempeño por plataforma y oportunidades de crecimiento.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
-              href={`/${pais}/${talks[0]?.slug}`}
+              href="/cotizar"
               className="inline-flex items-center gap-2 px-10 py-4 rounded-full font-bold transition-all duration-300 hover:scale-105"
               style={{
                 background: "linear-gradient(135deg, #6366F1, #EC4899)",
@@ -213,13 +250,13 @@ export default async function CountryPage({ params }: Props) {
                 boxShadow: "0 0 32px rgba(99,102,241,0.4)",
               }}
             >
-              Explorar Rankings
+              Agendá una demo
             </Link>
             <Link
-              href="/cotizar"
+              href={`/${pais}/${talks[0]?.slug}`}
               className="glass inline-flex items-center gap-2 px-10 py-4 rounded-full font-semibold text-slate-200 hover:text-white transition-all hover:bg-white/10"
             >
-              Haz tu cotización
+              Explorar rankings →
             </Link>
           </div>
         </div>
