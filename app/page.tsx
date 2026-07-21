@@ -43,19 +43,13 @@ export default function Home() {
 
           <div className="flex flex-wrap gap-3 justify-center mb-8">
             <Link
-              href="/sv/foodtalk"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 hover:scale-105"
+              href="#selector"
+              className="inline-flex items-center gap-2 px-8 py-3 rounded-full font-bold text-sm transition-all duration-300 hover:scale-105"
               style={{
                 background: "linear-gradient(135deg, #6366F1, #EC4899)",
                 color: "white",
                 boxShadow: "0 0 20px rgba(99,102,241,0.4)",
               }}
-            >
-              Ver demo del último mes
-            </Link>
-            <Link
-              href="#selector"
-              className="glass inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm text-slate-200 hover:text-white transition-all"
             >
               Explorar rankings →
             </Link>

@@ -28,6 +28,8 @@ export default function Navbar() {
 
   const close = () => { setMenuOpen(false); setCountryOpen(false); };
 
+  if (pathname === "/") return null;
+
   const currentCode = detectCountry(pathname);
   const currentCountry = currentCode ? getCountryInfo(currentCode) : null;
   const currentTalks = currentCode ? getCountryTalks(currentCode) : [];
