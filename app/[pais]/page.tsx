@@ -21,27 +21,29 @@ export default async function CountryPage({ params }: Props) {
 
   const talks = getCountryTalks(pais);
 
-  // Fetch stats for all talks in parallel
-  const statsResults = await Promise.all(
-    talks.map(async (talk) => {
-      try {
-        const data = await getCountryTalkData(pais as CountryCode, talk.slug);
-        return {
-          slug: talk.slug,
-          stats: {
-            brands: data.stats.totalPerfiles,
-            posts: data.stats.totalPublicaciones,
-            reactions: data.stats.totalReacciones,
-            lastUpdate: data.meta.mes,
-          } satisfies TalkCardStats,
-        };
-      } catch {
-        return { slug: talk.slug, stats: undefined };
-      }
-    })
-  );
-
-  const statsMap = Object.fromEntries(statsResults.map((r) => [r.slug, r.stats]));
+  // Solo fetchear stats para países con datos JSON (rápidos); SV usa Google Sheets y tarda
+  const statsMap: Record<string, TalkCardStats | undefined> = {};
+  if (pais !== "sv") {
+    const statsResults = await Promise.all(
+      talks.map(async (talk) => {
+        try {
+          const data = await getCountryTalkData(pais as CountryCode, talk.slug);
+          return {
+            slug: talk.slug,
+            stats: {
+              brands: data.stats.totalPerfiles,
+              posts: data.stats.totalPublicaciones,
+              reactions: data.stats.totalReacciones,
+              lastUpdate: data.meta.mes,
+            } satisfies TalkCardStats,
+          };
+        } catch {
+          return { slug: talk.slug, stats: undefined };
+        }
+      })
+    );
+    statsResults.forEach((r) => { statsMap[r.slug] = r.stats; });
+  }
 
   return (
     <div>
