@@ -112,7 +112,7 @@ export default async function CountryPage({ params }: Props) {
           {/* CTAs */}
           <div className="animate-fade-up delay-400 flex flex-wrap gap-3 justify-center">
             <Link
-              href={`/${pais}/${talks[0]?.slug}`}
+              href={pais === "sv" ? `/${talks[0]?.slug}` : `/${pais}/${talks[0]?.slug}`}
               className="inline-flex items-center gap-2 px-8 py-3 rounded-full font-bold text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
               style={{
                 background: "linear-gradient(135deg, #6366F1, #EC4899)",
@@ -215,7 +215,7 @@ export default async function CountryPage({ params }: Props) {
                 key={talk.slug}
                 talk={talk}
                 delay={(i + 1) * 100}
-                href={`/${pais}/${talk.slug}`}
+                href={pais === "sv" ? `/${talk.slug}` : `/${pais}/${talk.slug}`}
                 stats={statsMap[talk.slug]}
               />
             ))}
@@ -253,7 +253,7 @@ export default async function CountryPage({ params }: Props) {
               Agendá una demo
             </Link>
             <Link
-              href={`/${pais}/${talks[0]?.slug}`}
+              href={pais === "sv" ? `/${talks[0]?.slug}` : `/${pais}/${talks[0]?.slug}`}
               className="glass inline-flex items-center gap-2 px-10 py-4 rounded-full font-semibold text-slate-200 hover:text-white transition-all hover:bg-white/10"
             >
               Explorar rankings →
