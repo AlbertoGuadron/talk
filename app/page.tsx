@@ -41,20 +41,6 @@ export default function Home() {
             Explorá rankings, tendencias e insights para entender el desempeño de tu categoría y detectar oportunidades para tu marca.
           </p>
 
-          <div className="flex flex-wrap gap-3 justify-center mb-8">
-            <Link
-              href="#selector"
-              className="inline-flex items-center gap-2 px-8 py-3 rounded-full font-bold text-sm transition-all duration-300 hover:scale-105"
-              style={{
-                background: "linear-gradient(135deg, #6366F1, #EC4899)",
-                color: "white",
-                boxShadow: "0 0 20px rgba(99,102,241,0.4)",
-              }}
-            >
-              Explorar rankings →
-            </Link>
-          </div>
-
           <div className="flex flex-wrap gap-2 justify-center">
             {[
               { label: "Países", value: "3" },
