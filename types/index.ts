@@ -1,4 +1,4 @@
-export type TalkSlug = "foodtalk" | "housetalk" | "markettalk" | "retailtalk";
+export type TalkSlug = "foodtalk" | "housetalk" | "markettalk" | "retailtalk" | "moneytalk" | "tourismtalk";
 
 export interface TalkConfig {
   slug: TalkSlug;

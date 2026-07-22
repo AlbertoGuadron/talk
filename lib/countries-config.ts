@@ -27,7 +27,7 @@ export const COUNTRIES: CountryInfo[] = [
     code: "gt",
     name: "Guatemala",
     flag: "🇬🇹",
-    talks: ["foodtalk", "housetalk", "retailtalk"],
+    talks: ["foodtalk", "moneytalk", "tourismtalk"],
   },
 ];
 

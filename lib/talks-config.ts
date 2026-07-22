@@ -41,6 +41,26 @@ export const TALKS: TalkConfig[] = [
     icon: "🏪",
     hasCategoria: true,
   },
+  {
+    slug: "moneytalk",
+    label: "Moneytalk",
+    description: "Ranking de marcas del sector financiero en redes sociales",
+    color: "#10B981",
+    colorLight: "rgba(16,185,129,0.15)",
+    bgGradient: "from-[#10B981] to-[#06B6D4]",
+    icon: "💰",
+    hasCategoria: true,
+  },
+  {
+    slug: "tourismtalk",
+    label: "Tourismtalk",
+    description: "Ranking de marcas del sector turismo en redes sociales",
+    color: "#0EA5E9",
+    colorLight: "rgba(14,165,233,0.15)",
+    bgGradient: "from-[#0EA5E9] via-[#6366F1] to-[#8B5CF6]",
+    icon: "✈️",
+    hasCategoria: false,
+  },
 ];
 
 export const COMING_SOON_TALKS: never[] = [];
@@ -50,6 +70,8 @@ export const TALK_LOGOS: Record<TalkSlug, string> = {
   housetalk: "/galeria/housetalk.png",
   markettalk: "/galeria/markettalk.png",
   retailtalk: "/galeria/retailtalk.png",
+  moneytalk: "/galeria/moneytalk.png",
+  tourismtalk: "/galeria/tourismtalk.png",
 };
 
 export const TALK_COLORS: Record<TalkSlug, string> = {
@@ -57,6 +79,8 @@ export const TALK_COLORS: Record<TalkSlug, string> = {
   housetalk: "#FF8C00",
   markettalk: "#6B8E23",
   retailtalk: "#00CED1",
+  moneytalk: "#10B981",
+  tourismtalk: "#0EA5E9",
 };
 
 export const TALK_GRADIENT_STOPS: Record<TalkSlug, [string, string]> = {
@@ -64,6 +88,8 @@ export const TALK_GRADIENT_STOPS: Record<TalkSlug, [string, string]> = {
   housetalk: ["#FF8C00", "#9B59B6"],
   markettalk: ["#6B8E23", "#4682B4"],
   retailtalk: ["#00CED1", "#8B5CF6"],
+  moneytalk: ["#10B981", "#06B6D4"],
+  tourismtalk: ["#0EA5E9", "#8B5CF6"],
 };
 
 export const NETWORK_COLORS: Record<string, string> = {

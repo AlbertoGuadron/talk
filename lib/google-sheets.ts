@@ -5,6 +5,9 @@ import {
   parseHousetalkData,
   parseMarkettalkData,
   parseRetailtalkData,
+  parseGtFoodtalkData,
+  parseMoneyTalkData,
+  parseTourismtalkData,
   parsePostsData,
   buildDashboardData,
 } from "./data-parser";
@@ -50,11 +53,23 @@ function parseConfigRows(rows: unknown[][]): TalkMeta {
   };
 }
 
+// SV spreadsheet tabs
 const SHEET_TAB: Record<TalkSlug, { datos: string; config: string; publicaciones: string }> = {
-  foodtalk:   { datos: "foodtalk_datos",   config: "foodtalk_config",   publicaciones: "Publicaciones_Foodtalk" },
-  housetalk:  { datos: "housetalk_datos",  config: "housetalk_config",  publicaciones: "Publicaciones_Housetalk" },
-  markettalk: { datos: "markettalk_datos", config: "markettalk_config", publicaciones: "Publicaciones_Markettalk" },
-  retailtalk: { datos: "retailtalk_datos", config: "retailtalk_config", publicaciones: "Publicaciones_Retailtalk" },
+  foodtalk:    { datos: "foodtalk_datos",    config: "foodtalk_config",    publicaciones: "Publicaciones_Foodtalk" },
+  housetalk:   { datos: "housetalk_datos",   config: "housetalk_config",   publicaciones: "Publicaciones_Housetalk" },
+  markettalk:  { datos: "markettalk_datos",  config: "markettalk_config",  publicaciones: "Publicaciones_Markettalk" },
+  retailtalk:  { datos: "retailtalk_datos",  config: "retailtalk_config",  publicaciones: "Publicaciones_Retailtalk" },
+  // GT-only (not used by getTalkData but required for exhaustive Record<TalkSlug>)
+  moneytalk:   { datos: "moneytalk_datos",   config: "moneytalk_config",   publicaciones: "Publicaciones_moneytalk" },
+  tourismtalk: { datos: "tourismtalk_datos", config: "tourismtalk_config", publicaciones: "Publicaciones_tourismtalk" },
+};
+
+// GT spreadsheet tabs (no config sheet — meta comes from get-country-data.ts)
+type GtSlug = "foodtalk" | "moneytalk" | "tourismtalk";
+const GT_SHEET_TAB: Record<GtSlug, { datos: string; publicaciones: string }> = {
+  foodtalk:    { datos: "foodtalk_datos",    publicaciones: "Publicaciones_foodtalk" },
+  moneytalk:   { datos: "moneytalk_datos",   publicaciones: "Publicaciones_moneytalk" },
+  tourismtalk: { datos: "tourismtalk_datos", publicaciones: "Publicaciones_tourismtalk" },
 };
 
 function extractSpreadsheetId(raw: string): string {
@@ -97,4 +112,33 @@ export async function getTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
   }
 
   return buildDashboardData(slug, profiles, meta, posts);
+}
+
+export async function getGtTalkData(slug: GtSlug, meta: TalkMeta): Promise<TalkDashboardData> {
+  const spreadsheetId = extractSpreadsheetId(process.env.GOOGLE_SPREADSHEET_GT_ID!);
+  const postsSpreadsheetId = process.env.GOOGLE_SPREADSHEET_GT_POSTS_ID
+    ? extractSpreadsheetId(process.env.GOOGLE_SPREADSHEET_GT_POSTS_ID)
+    : spreadsheetId;
+  const tabs = GT_SHEET_TAB[slug];
+
+  const [dataRows, postRows] = await Promise.all([
+    getSheetValues(spreadsheetId, `${tabs.datos}!A1:P500`),
+    getSheetValues(postsSpreadsheetId, `${tabs.publicaciones}!A1:P10000`).catch(() => [] as unknown[][]),
+  ]);
+
+  let profiles;
+  if (slug === "foodtalk") profiles = parseGtFoodtalkData(dataRows);
+  else if (slug === "moneytalk") profiles = parseMoneyTalkData(dataRows);
+  else profiles = parseTourismtalkData(dataRows);
+
+  let posts = parsePostsData(postRows, slug as TalkSlug);
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const { syncPostImages } = await import("./image-cache");
+    const result = await syncPostImages(posts, slug as TalkSlug);
+    posts = result.posts;
+    console.log(`[image-cache] gt/${slug}:`, result.stats);
+  }
+
+  return buildDashboardData(slug as TalkSlug, profiles, meta, posts);
 }

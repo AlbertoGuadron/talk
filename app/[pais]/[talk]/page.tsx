@@ -12,7 +12,7 @@ interface Props {
   params: Promise<{ pais: string; talk: string }>;
 }
 
-const VALID_TALKS: TalkSlug[] = ["foodtalk", "housetalk", "markettalk", "retailtalk"];
+const VALID_TALKS: TalkSlug[] = ["foodtalk", "housetalk", "markettalk", "retailtalk", "moneytalk", "tourismtalk"];
 
 export default async function CountryTalkPage({ params }: Props) {
   const { pais, talk } = await params;

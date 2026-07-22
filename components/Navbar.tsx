@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { COUNTRIES, getCountryInfo, getCountryTalks } from "@/lib/countries-config";
 import type { TalkSlug } from "@/types";
 
-const TALK_SLUGS: TalkSlug[] = ["foodtalk", "housetalk", "markettalk", "retailtalk"];
+const TALK_SLUGS: TalkSlug[] = ["foodtalk", "housetalk", "markettalk", "retailtalk", "moneytalk", "tourismtalk"];
 const COUNTRY_CODES = ["sv", "hn", "gt"];
 
 function detectCountry(pathname: string): string | null {

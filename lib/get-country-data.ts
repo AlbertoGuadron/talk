@@ -29,19 +29,19 @@ const COUNTRY_META: Record<CountryCode, Record<string, TalkMeta>> = {
       analisis: "Pollo Campero mantuvo su dominio en Guatemala con la mayor comunidad digital, mientras McDonald's y Domino's compitieron por el engagement en contenido pagado y orgánico.",
       analisis2: "Guatemala presenta el mercado de alimentos más activo de Centroamérica en redes sociales, con marcas globales y locales compitiendo en todos los indicadores.",
     },
-    housetalk: {
-      titulo: "Así se movió el mercado inmobiliario en Guatemala",
+    moneytalk: {
+      titulo: "Así se movió el sector financiero en Guatemala",
       subtitulo: "Ranking de presencia en redes sociales · Guatemala",
       mes: "Junio 2026",
-      analisis: "Cayalá y Villas de Antigua lideraron el desempeño digital en el segmento inmobiliario, con contenido de alta calidad visual que genera engagement superior al promedio del sector.",
-      analisis2: "El mercado inmobiliario guatemalteco está adoptando rápidamente estrategias digitales, con proyectos de alto valor invirtiendo en contenido para plataformas como Instagram y TikTok.",
+      analisis: "Los bancos y aseguradoras guatemaltecas intensificaron su presencia digital, con bancos como Bantrab y BAC liderando en seguidores y engagement en Facebook e Instagram.",
+      analisis2: "El sector financiero guatemalteco apuesta por el contenido educativo y de beneficios como principal motor de interacción, superando a la publicidad tradicional en efectividad digital.",
     },
-    retailtalk: {
-      titulo: "Así se movió el mercado de retail en Guatemala",
+    tourismtalk: {
+      titulo: "Así se movió el sector turístico en Guatemala",
       subtitulo: "Ranking de presencia en redes sociales · Guatemala",
       mes: "Junio 2026",
-      analisis: "Walmart Guatemala y Siman lideraron el mes en volumen de publicaciones y seguidores, aunque marcas como Cemaco destacaron por su alta tasa de engagement en contenido de lifestyle.",
-      analisis2: "El retail en Guatemala muestra una consolidación de grandes cadenas con presencia multicanal robusta, mientras marcas especializadas compiten eficientemente en nichos de contenido.",
+      analisis: "Los destinos turísticos y hoteles guatemaltecos incrementaron su actividad en redes sociales, con operadores de turismo aventura y destinos culturales liderando en engagement.",
+      analisis2: "Guatemala aprovecha su riqueza cultural y natural como diferenciador clave en contenido digital, generando alto engagement con publicaciones de experiencias auténticas.",
     },
   },
 };
@@ -55,6 +55,19 @@ export async function getCountryTalkData(
     return getTalkData(slug);
   }
 
+  if (pais === "gt") {
+    const { getGtTalkData } = await import("./google-sheets");
+    const gtSlug = slug as "foodtalk" | "moneytalk" | "tourismtalk";
+    const meta = COUNTRY_META.gt[slug] ?? {
+      titulo: `${slug.charAt(0).toUpperCase() + slug.slice(1)} Guatemala`,
+      subtitulo: "Ranking de presencia en redes sociales · Guatemala",
+      mes: "Junio 2026",
+      analisis: "",
+    };
+    return getGtTalkData(gtSlug, meta);
+  }
+
+  // HN: still uses demo JSON
   const demoData = await import(`./demo-data/${pais}/${slug}.json`);
   const profiles = demoData.default as ProfileData[];
   const meta = COUNTRY_META[pais][slug] ?? {

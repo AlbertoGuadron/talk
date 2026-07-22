@@ -28,6 +28,18 @@ const DEFAULT_META: Record<TalkSlug, TalkMeta> = {
     mes: "Abril 2026",
     analisis: "Análisis del mes de Abril 2026. Edita este texto desde el panel de administrador.",
   },
+  moneytalk: {
+    titulo: "Moneytalk",
+    subtitulo: "Ranking de presencia en redes sociales",
+    mes: "Abril 2026",
+    analisis: "Análisis del mes de Abril 2026. Edita este texto desde el panel de administrador.",
+  },
+  tourismtalk: {
+    titulo: "Tourismtalk",
+    subtitulo: "Ranking de presencia en redes sociales",
+    mes: "Abril 2026",
+    analisis: "Análisis del mes de Abril 2026. Edita este texto desde el panel de administrador.",
+  },
 };
 
 async function fetchTalkData(slug: TalkSlug): Promise<TalkDashboardData> {

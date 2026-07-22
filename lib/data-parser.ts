@@ -147,14 +147,93 @@ export function parseRetailtalkData(rows: unknown[][]): ProfileData[] {
   return profiles;
 }
 
+// ── Parsers for Guatemala ─────────────────────────────────────────────────────
+
+// GTM foodtalk: col order differs from SV (likes at 5, comentarios at 6, reacciones_total at 7)
+export function parseGtFoodtalkData(rows: unknown[][]): ProfileData[] {
+  const profiles: ProfileData[] = [];
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row[1] || String(row[1]).trim() === "") continue;
+    const likes = parseNumber(row[5]);
+    const comentarios = parseNumber(row[6]);
+    profiles.push({
+      categoria: String(row[0] || "SIN CATEGORÍA").trim().replace(/\s+/g, " ").toUpperCase(),
+      profile: String(row[1]).trim(),
+      network: String(row[2] || "").toUpperCase().trim(),
+      seguidores: parseNumber(row[3]),
+      publicaciones: parseNumber(row[4]),
+      likes,
+      comentarios,
+      compartidos: 0,
+      engagement: parseNumber(row[7]), // Reacciones, Comentarios y Compartidos (total)
+      impresiones: parseNumber(row[9]),
+      imageLink: String(row[14] || "").trim(),
+    });
+  }
+  return profiles;
+}
+
+// GTM moneytalk: has categories but no combined reactions column
+export function parseMoneyTalkData(rows: unknown[][]): ProfileData[] {
+  const profiles: ProfileData[] = [];
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row[1] || String(row[1]).trim() === "") continue;
+    const likes = parseNumber(row[5]);
+    const comentarios = parseNumber(row[6]);
+    profiles.push({
+      categoria: String(row[0] || "SIN CATEGORÍA").trim().replace(/\s+/g, " ").toUpperCase(),
+      profile: String(row[1]).trim(),
+      network: String(row[2] || "").toUpperCase().trim(),
+      seguidores: parseNumber(row[3]),
+      publicaciones: parseNumber(row[4]),
+      likes,
+      comentarios,
+      compartidos: 0,
+      engagement: likes + comentarios, // no combined column; compute from parts
+      impresiones: parseNumber(row[8]),
+      imageLink: String(row[13] || "").trim(),
+    });
+  }
+  return profiles;
+}
+
+// GTM tourismtalk: no category (like housetalk), uses total reactions at col 6
+export function parseTourismtalkData(rows: unknown[][]): ProfileData[] {
+  const profiles: ProfileData[] = [];
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row[0] || String(row[0]).trim() === "") continue;
+    const likes = parseNumber(row[4]);
+    const comentarios = parseNumber(row[5]);
+    profiles.push({
+      categoria: "TURISMO",
+      profile: String(row[0]).trim(),
+      network: String(row[1] || "").toUpperCase().trim(),
+      seguidores: parseNumber(row[2]),
+      publicaciones: parseNumber(row[3]),
+      likes,
+      comentarios,
+      compartidos: 0,
+      engagement: parseNumber(row[6]), // Reacciones, Comentarios y Compartidos (total)
+      impresiones: 0,
+      imageLink: String(row[10] || "").trim(),
+    });
+  }
+  return profiles;
+}
+
 // ── Column mapping per talk for posts ────────────────────────────────────────
 type PostColMap = { date: number; msg: number; cat: number; profile: number; network: number; engagement: number; link: number; img: number };
 
 const POST_COLS: Record<TalkSlug, PostColMap> = {
-  foodtalk:   { date: 0, msg: 1, cat: 2,  profile: 3,  network: 4, engagement: 8, link: 12, img: 14 },
-  housetalk:  { date: 0, msg: 1, cat: -1, profile: 2,  network: 3, engagement: 7, link: 12, img: 14 },
-  markettalk: { date: 0, msg: 1, cat: 2,  profile: 3,  network: 4, engagement: 5, link: 11, img: 13 },
-  retailtalk: { date: 0, msg: 1, cat: 2,  profile: 3,  network: 4, engagement: 8, link: 12, img: 14 },
+  foodtalk:    { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 8, link: 12, img: 14 },
+  housetalk:   { date: 0, msg: 1, cat: -1, profile: 2, network: 3, engagement: 7, link: 12, img: 14 },
+  markettalk:  { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 5, link: 11, img: 13 },
+  retailtalk:  { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 8, link: 12, img: 14 },
+  moneytalk:   { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 8, link: 12, img: 14 },
+  tourismtalk: { date: 0, msg: 1, cat: -1, profile: 2, network: 3, engagement: 7, link: 11, img: 13 },
 };
 
 export function parsePostsData(rows: unknown[][], slug: TalkSlug): PostData[] {
@@ -203,7 +282,7 @@ export function buildDashboardData(
   posts: PostData[] = []
 ): TalkDashboardData {
   const color = TALK_COLORS[slug];
-  const hasCategoria = slug === "foodtalk" || slug === "markettalk" || slug === "retailtalk";
+  const hasCategoria = slug === "foodtalk" || slug === "markettalk" || slug === "retailtalk" || slug === "moneytalk";
 
   const topPublicaciones: ChartDataPoint[] = profiles
     .filter((p) => p.publicaciones > 0)
