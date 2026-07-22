@@ -47,7 +47,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
 
-            {/* Logo */}
+            {/* Logo TALK */}
             <Link href="/" className="flex items-center gap-2 flex-shrink-0" onClick={close}>
               <Image
                 src="/galeria/logotalk.png"
@@ -58,6 +58,29 @@ export default function Navbar() {
                 priority
               />
             </Link>
+
+            {/* Logo Digital Insights */}
+            <a
+              href="https://www.digitalinsightsla.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden lg:flex flex-col items-center gap-0.5 ml-4 px-4 py-1.5 rounded-xl group transition-all"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <span className="text-[8px] font-medium text-slate-500 uppercase tracking-widest leading-none">
+                un producto de
+              </span>
+              <Image
+                src="/galeria/di-logo-white.webp"
+                alt="Digital Insights"
+                width={90}
+                height={28}
+                className="h-5 w-auto opacity-75 group-hover:opacity-100 transition-opacity"
+              />
+            </a>
 
             {/* Nav links — desktop */}
             <nav className="hidden md:flex items-center gap-1">

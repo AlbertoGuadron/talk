@@ -66,6 +66,33 @@ export default function Home() {
         style={{ background: "#F8F9FC" }}
       >
         <div className="w-full max-w-sm">
+          {/* Digital Insights badge */}
+          <a
+            href="https://www.digitalinsightsla.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex justify-center mb-8 group"
+          >
+            <div
+              className="flex flex-col items-center gap-2 px-7 py-3 rounded-2xl transition-all duration-200 group-hover:opacity-90"
+              style={{
+                background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+              }}
+            >
+              <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">
+                un producto de
+              </span>
+              <Image
+                src="/galeria/di-logo-white.webp"
+                alt="Digital Insights"
+                width={120}
+                height={40}
+                className="h-8 w-auto"
+              />
+            </div>
+          </a>
+
           <h2 className="text-2xl font-black text-slate-800 text-center mb-2">
             Elegí el mercado que querés explorar
           </h2>
