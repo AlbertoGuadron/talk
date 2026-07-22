@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getCountryInfo } from "@/lib/countries-config";
+import { getCountryInfo, COUNTRIES } from "@/lib/countries-config";
 import { getCountryTalkData } from "@/lib/get-country-data";
 import { getTalkConfig } from "@/lib/talks-config";
 import TalkDashboard from "@/components/TalkDashboard";
@@ -7,6 +7,13 @@ import type { TalkSlug } from "@/types";
 import type { CountryCode } from "@/lib/countries-config";
 
 export const revalidate = false;
+
+// Pre-build all country/talk combinations at deploy time so pages are static
+export async function generateStaticParams() {
+  return COUNTRIES.flatMap((country) =>
+    country.talks.map((talk) => ({ pais: country.code, talk }))
+  );
+}
 
 interface Props {
   params: Promise<{ pais: string; talk: string }>;
