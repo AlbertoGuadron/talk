@@ -23,7 +23,7 @@ export default async function CountryPage({ params }: Props) {
 
   // Solo fetchear stats para países con datos JSON (rápidos); SV usa Google Sheets y tarda
   const statsMap: Record<string, TalkCardStats | undefined> = {};
-  if (pais !== "sv") {
+  if (pais === "hn") {
     const statsResults = await Promise.all(
       talks.map(async (talk) => {
         try {
