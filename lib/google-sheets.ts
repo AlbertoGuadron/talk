@@ -135,7 +135,7 @@ export async function getGtTalkData(slug: GtSlug, meta: TalkMeta): Promise<TalkD
 
   if (process.env.SUPABASE_URL) {
     const { syncPostImages } = await import("./image-cache");
-    const result = await syncPostImages(posts, slug as TalkSlug);
+    const result = await syncPostImages(posts, `gt-${slug}`);
     posts = result.posts;
     console.log(`[image-cache] gt/${slug}:`, result.stats);
   }
