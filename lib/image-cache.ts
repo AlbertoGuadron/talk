@@ -1,9 +1,11 @@
 import type { PostData } from "@/types";
+import { createClient } from "@supabase/supabase-js";
 
-const BLOB_PREFIX = "talks-posts";
+const BUCKET = "talk-images";
+const PREFIX = "posts";
 
-function postBlobKey(slug: string, messageId: string): string {
-  return `${BLOB_PREFIX}/${slug}/${messageId}.jpg`;
+function imageKey(slug: string, messageId: string): string {
+  return `${PREFIX}/${slug}/${messageId}.jpg`;
 }
 
 function extractMessageId(post: PostData): string {
@@ -15,6 +17,13 @@ function extractMessageId(post: PostData): string {
   return `${post.profile}-${post.date}-${post.engagement}`
     .replace(/[^a-zA-Z0-9-]/g, "_")
     .slice(0, 80);
+}
+
+function getSupabase() {
+  return createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 }
 
 async function fetchImageAsBuffer(
@@ -53,18 +62,28 @@ export async function syncPostImages(
   slug: string
 ): Promise<{ posts: PostData[]; stats: SyncStats }> {
   const emptyStats: SyncStats = { total: posts.length, downloaded: 0, cached: 0, failed: 0, noUrl: 0 };
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return { posts, stats: emptyStats };
 
-  const { put, list, del } = await import("@vercel/blob");
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return { posts, stats: emptyStats };
+  }
 
-  // ── 1. Load existing blobs → build key→url map ────────────────────────────
+  const supabase = getSupabase();
+
+  // ── 1. List existing files in this slug's folder ──────────────────────────
   const existingMap = new Map<string, string>();
   try {
-    const { blobs } = await list({ prefix: `${BLOB_PREFIX}/${slug}/` });
-    for (const b of blobs) existingMap.set(b.pathname, b.url);
-  } catch { /* proceed without existing data */ }
+    const { data: files } = await supabase.storage
+      .from(BUCKET)
+      .list(`${PREFIX}/${slug}`, { limit: 1000 });
 
-  // ── 2. Process each post (10 concurrent) ──────────────────────────────────
+    for (const file of files ?? []) {
+      const path = `${PREFIX}/${slug}/${file.name}`;
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+      existingMap.set(path, data.publicUrl);
+    }
+  } catch { /* proceed without existing cache */ }
+
+  // ── 2. Process each post (10 concurrent) ─────────────────────────────────
   const CONCURRENCY = 10;
   const updated: PostData[] = [...posts];
   const usedKeys = new Set<string>();
@@ -74,7 +93,7 @@ export async function syncPostImages(
     await Promise.allSettled(
       posts.slice(i, i + CONCURRENCY).map(async (post, idx) => {
         const globalIdx = i + idx;
-        const key = postBlobKey(slug, extractMessageId(post));
+        const key = imageKey(slug, extractMessageId(post));
         usedKeys.add(key);
 
         if (!post.imageLink) {
@@ -82,7 +101,7 @@ export async function syncPostImages(
           return;
         }
 
-        // ✅ Already cached in Blob → reuse, skip download
+        // ✅ Already cached in Supabase → reuse, skip download
         const cached = existingMap.get(key);
         if (cached) {
           updated[globalIdx] = { ...post, imageLink: cached };
@@ -90,7 +109,7 @@ export async function syncPostImages(
           return;
         }
 
-        // 🌐 New image → try to download from CDN and save to Blob
+        // 🌐 New image → download and upload to Supabase Storage
         try {
           const img = await fetchImageAsBuffer(post.imageLink);
           if (!img) {
@@ -98,25 +117,35 @@ export async function syncPostImages(
             stats.failed++;
             return;
           }
-          const { url } = await put(key, img.buffer, {
-            access: "public",
-            addRandomSuffix: false,
-            contentType: img.contentType,
-          });
-          updated[globalIdx] = { ...post, imageLink: url };
+
+          const { error } = await supabase.storage
+            .from(BUCKET)
+            .upload(key, img.buffer, {
+              contentType: img.contentType,
+              upsert: false,
+            });
+
+          if (error && error.message !== "The resource already exists") {
+            console.error(`[image-cache] Supabase upload error for ${slug}:`, error.message);
+            stats.failed++;
+            return;
+          }
+
+          const { data } = supabase.storage.from(BUCKET).getPublicUrl(key);
+          updated[globalIdx] = { ...post, imageLink: data.publicUrl };
           stats.downloaded++;
         } catch (e) {
-          console.error(`[image-cache] Blob put error for ${slug}:`, e);
+          console.error(`[image-cache] Upload error for ${slug}:`, e);
           stats.failed++;
         }
       })
     );
   }
 
-  // ── 3. Delete blobs from previous month no longer in use ──────────────────
+  // ── 3. Delete files from previous month no longer in use ─────────────────
   const toDelete = [...existingMap.keys()].filter((k) => !usedKeys.has(k));
   if (toDelete.length > 0) {
-    await Promise.allSettled(toDelete.map((k) => del(k)));
+    await supabase.storage.from(BUCKET).remove(toDelete);
   }
 
   return { posts: updated, stats };

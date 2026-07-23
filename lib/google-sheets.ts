@@ -104,7 +104,7 @@ export async function getTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
   let posts = parsePostsData(postRows, slug);
 
   // Cache post images to Vercel Blob so they don't expire
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  if (process.env.SUPABASE_URL) {
     const { syncPostImages } = await import("./image-cache");
     const result = await syncPostImages(posts, slug);
     posts = result.posts;
@@ -133,7 +133,7 @@ export async function getGtTalkData(slug: GtSlug, meta: TalkMeta): Promise<TalkD
 
   let posts = parsePostsData(postRows, slug as TalkSlug);
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  if (process.env.SUPABASE_URL) {
     const { syncPostImages } = await import("./image-cache");
     const result = await syncPostImages(posts, slug as TalkSlug);
     posts = result.posts;
