@@ -140,28 +140,6 @@ export default function TalkDashboard({ data, config }: Props) {
         <StatsCard label="Tasa de engagement"     value={engagementRateStr}             icon="📊" color={config.color} colorLight={config.colorLight} />
       </div>
 
-      {/* ── Top marcas del mes ────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
-        <TopBarChart
-          data={topReacciones}
-          color={config.color}
-          title="Top Marcas por Reacciones"
-          subtitle="Marcas con mayor impacto en el período"
-        />
-        <TopBarChart
-          data={topPublicaciones}
-          color={config.color}
-          title="Top Marcas por Publicaciones"
-          subtitle="Marcas más activas del período"
-        />
-        <TopBarChart
-          data={topSeguidores}
-          color={config.color}
-          title="Top Marcas por Seguidores"
-          subtitle="Marcas con mayor comunidad digital"
-        />
-      </div>
-
       {/* ── Datos por industria / categoría ───────────────── */}
       {hasCategoria ? (
         <>
