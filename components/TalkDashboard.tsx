@@ -146,7 +146,7 @@ export default function TalkDashboard({ data, config }: Props) {
           <ReaccionesCarousel
             data={carouselItems}
             color={config.color}
-            title="Top Categorías por Engagement"
+            title="Top Categorías por Reacciones"
             subtitle="Categorías con mayor impacto en el período"
           />
 
@@ -167,10 +167,10 @@ export default function TalkDashboard({ data, config }: Props) {
             />
             <TopBarChartCategoryTabbed
               profiles={profiles}
-              field="seguidores"
+              field="efectividad"
               color={config.color}
-              title="Seguidores por Categoría"
-              subtitle="Audiencia total por tipo de marca"
+              title="Efectividad por Categoría"
+              subtitle="Publicaciones por reacción (menor = más eficiente)"
             />
           </div>
         </>
@@ -242,10 +242,10 @@ export default function TalkDashboard({ data, config }: Props) {
         }}
       >
         <h3 className="text-xl md:text-2xl font-black text-white mb-2">
-          ¿Querés conocer cómo se desempeña tu marca dentro de esta categoría?
+          ¿Quiere conocer cómo se desempeña su marca dentro de esta categoría?
         </h3>
         <p className="text-slate-400 text-sm mb-6 max-w-xl mx-auto">
-          Cotizá un análisis personalizado con comparación competitiva, desempeño por plataforma y oportunidades de crecimiento.
+          Cotice un análisis personalizado con comparación competitiva, desempeño por plataforma y oportunidades de crecimiento.
         </p>
         <Link
           href="/cotizar"
@@ -256,7 +256,7 @@ export default function TalkDashboard({ data, config }: Props) {
             boxShadow: `0 0 24px ${config.color}40`,
           }}
         >
-          Solicitá el reporte de tu marca →
+          Agende una demo →
         </Link>
       </div>
 

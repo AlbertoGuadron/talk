@@ -312,22 +312,23 @@ export function buildDashboardData(
 
   // Carousel: top categories by engagement — use image from top brand per category
   const carouselItems: ChartDataPoint[] = hasCategoria ? (() => {
-    const map: Record<string, { total: number; bestImg: string; bestEng: number }> = {};
+    const map: Record<string, { total: number; bestImg: string; bestEng: number; bestBrand: string }> = {};
     for (const p of profiles) {
       if (p.engagement <= 0) continue;
       const cat = toTitleCase(p.categoria || "Sin Categoría");
-      if (!map[cat]) map[cat] = { total: 0, bestImg: "", bestEng: 0 };
+      if (!map[cat]) map[cat] = { total: 0, bestImg: "", bestEng: 0, bestBrand: "" };
       map[cat].total += p.engagement;
       if (p.engagement > map[cat].bestEng) {
         map[cat].bestEng = p.engagement;
         map[cat].bestImg = p.imageLink || "";
+        map[cat].bestBrand = p.profile;
       }
     }
     return Object.entries(map)
       .sort(([, a], [, b]) => b.total - a.total)
       .slice(0, 10)
-      .map(([name, { total, bestImg }]) => ({
-        name, value: total, fill: color, imageLink: bestImg,
+      .map(([name, { total, bestImg, bestBrand }]) => ({
+        name, value: total, fill: color, imageLink: bestImg, brand: bestBrand,
       }));
   })() : [];
 

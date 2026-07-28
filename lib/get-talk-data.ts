@@ -49,8 +49,12 @@ async function fetchTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
     process.env.GOOGLE_PRIVATE_KEY;
 
   if (useSheets) {
-    const { getTalkData: getSheetsData } = await import("./google-sheets");
-    return getSheetsData(slug);
+    try {
+      const { getTalkData: getSheetsData } = await import("./google-sheets");
+      return await getSheetsData(slug);
+    } catch (err) {
+      console.warn(`[get-talk-data] Google Sheets failed for ${slug}, using demo data:`, (err as Error).message);
+    }
   }
 
   const demoData = await import(`./demo-data/${slug}.json`);

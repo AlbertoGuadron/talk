@@ -88,11 +88,11 @@ export default async function CountryPage({ params }: Props) {
 
           <h1 className="animate-fade-up delay-150 text-2xl md:text-3xl font-black text-white mb-3 leading-tight">
             El mercado ya se está moviendo.{" "}
-            <span className="text-gradient">Descubrí quién está ganando</span> y por qué.
+            <span className="text-gradient">Descubra quién está ganando</span> y por qué.
           </h1>
 
           <p className="animate-fade-up delay-200 text-slate-300 text-base md:text-lg max-w-xl mx-auto leading-relaxed mb-8">
-            Explorá rankings, tendencias e insights para entender el desempeño de tu categoría en {country.name}.
+            Explore rankings, tendencias e insights para entender el desempeño de su categoría en {country.name}.
           </p>
 
           {/* Stats badges */}
@@ -100,7 +100,7 @@ export default async function CountryPage({ params }: Props) {
             {[
               { label: "Talks activos", value: String(talks.length) },
               { label: "Disponible", value: "24/7" },
-              { label: "Actualización", value: "Mensual" },
+              { label: "Actualización", value: "Semanal" },
             ].map((s) => (
               <div key={s.label} className="glass rounded-full px-5 py-2.5 flex items-center gap-2.5">
                 <div className="text-left">
@@ -114,7 +114,7 @@ export default async function CountryPage({ params }: Props) {
           {/* CTAs */}
           <div className="animate-fade-up delay-400 flex flex-wrap gap-3 justify-center">
             <Link
-              href={pais === "sv" ? `/${talks[0]?.slug}` : `/${pais}/${talks[0]?.slug}`}
+              href="#cobertura"
               className="inline-flex items-center gap-2 px-8 py-3 rounded-full font-bold text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
               style={{
                 background: "linear-gradient(135deg, #6366F1, #EC4899)",
@@ -122,13 +122,7 @@ export default async function CountryPage({ params }: Props) {
                 boxShadow: "0 0 24px rgba(99,102,241,0.4)",
               }}
             >
-              Ver rankings →
-            </Link>
-            <Link
-              href="#cobertura"
-              className="glass inline-flex items-center gap-2 px-8 py-3 rounded-full font-semibold text-sm text-slate-200 hover:text-white transition-all duration-200 hover:bg-white/10"
-            >
-              Explorar rankings
+              Explorar rankings →
             </Link>
           </div>
         </div>
@@ -195,11 +189,11 @@ export default async function CountryPage({ params }: Props) {
               {country.flag} Nuestra cobertura en {country.name}
             </p>
             <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
-              Elegí el mercado que querés{" "}
+              Elija el mercado que quiere{" "}
               <span className="text-gradient">explorar</span>
             </h2>
             <p className="text-slate-400 max-w-xl mx-auto text-sm">
-              Accedé a los rankings del último mes y descubrí quién está liderando, qué contenidos están generando mayor impacto y dónde están las principales oportunidades.
+              Acceda a los rankings de la última semana y descubra quién está liderando, qué contenidos están generando mayor impacto y dónde están las principales oportunidades.
             </p>
           </div>
 
@@ -236,11 +230,11 @@ export default async function CountryPage({ params }: Props) {
         />
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-5xl font-black text-white mb-4 leading-tight">
-            ¿Querés conocer cómo se desempeña tu marca en{" "}
+            ¿Quiere conocer cómo se desempeña su marca en{" "}
             <span className="text-gradient">{country.name}</span>?
           </h2>
           <p className="text-slate-400 mb-10 text-base">
-            Cotizá un análisis personalizado con comparación competitiva, desempeño por plataforma y oportunidades de crecimiento.
+            Cotice un análisis personalizado con comparación competitiva, desempeño por plataforma y oportunidades de crecimiento.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
@@ -252,7 +246,7 @@ export default async function CountryPage({ params }: Props) {
                 boxShadow: "0 0 32px rgba(99,102,241,0.4)",
               }}
             >
-              Agendá una demo
+              Agende una demo
             </Link>
             <Link
               href={pais === "sv" ? `/${talks[0]?.slug}` : `/${pais}/${talks[0]?.slug}`}

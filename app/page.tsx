@@ -35,16 +35,16 @@ export default function Home() {
 
           <h1 className="text-2xl md:text-3xl font-black text-white mb-3 leading-tight">
             El mercado ya se está moviendo.{" "}
-            <span className="text-gradient">Descubrí quién está ganando</span> y por qué.
+            <span className="text-gradient">Descubra quién está ganando</span> y por qué.
           </h1>
           <p className="text-slate-400 text-sm md:text-base leading-relaxed mb-8">
-            Explorá rankings, tendencias e insights para entender el desempeño de tu categoría y detectar oportunidades para tu marca.
+            Explore rankings, tendencias e insights para entender el desempeño de su categoría y detectar oportunidades para su marca.
           </p>
 
           <div className="flex flex-wrap gap-2 justify-center">
             {[
               { label: "Países", value: "3" },
-              { label: "Actualización", value: "Mensual" },
+              { label: "Actualización", value: "Semanal" },
               { label: "Disponible", value: "24/7" },
             ].map((s) => (
               <div key={s.label} className="glass rounded-full px-4 py-2 flex items-center gap-2">
@@ -94,11 +94,24 @@ export default function Home() {
           </a>
 
           <h2 className="text-2xl font-black text-slate-800 text-center mb-2">
-            Elegí el mercado que querés explorar
+            Elija el mercado que quiere explorar
           </h2>
-          <p className="text-slate-500 text-sm text-center mb-8">
-            Accedé a los rankings del último mes y descubrí quién está liderando, qué contenidos están generando mayor impacto y dónde están las principales oportunidades.
+          <p className="text-slate-500 text-sm text-center mb-5">
+            Acceda a los rankings de la última semana y descubra quién está liderando, qué contenidos están generando mayor impacto y dónde están las principales oportunidades.
           </p>
+
+          {/* Lista de talks disponibles */}
+          <div className="flex flex-wrap gap-2 justify-center mb-6">
+            {["Foodtalk", "Housetalk", "Markettalk", "RetailTalk", "MoneyTalk", "Tourismtalk"].map((t) => (
+              <span
+                key={t}
+                className="text-xs font-semibold px-3 py-1 rounded-full"
+                style={{ background: "rgba(99,102,241,0.1)", color: "#6366F1", border: "1px solid rgba(99,102,241,0.2)" }}
+              >
+                {t}
+              </span>
+            ))}
+          </div>
 
           <div className="grid grid-cols-1 gap-3">
             {COUNTRIES.map((country) => (
@@ -113,7 +126,7 @@ export default function Home() {
                     {country.name}
                   </p>
                   <p className="text-xs text-slate-400">
-                    {country.talks.length} Talk{country.talks.length !== 1 ? "s" : ""} disponibles
+                    Ver rankings disponibles →
                   </p>
                 </div>
                 <svg className="w-5 h-5 text-slate-300 group-hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">

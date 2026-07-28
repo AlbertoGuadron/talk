@@ -56,7 +56,6 @@ export async function getCountryTalkData(
   }
 
   if (pais === "gt") {
-    const { getGtTalkData } = await import("./google-sheets");
     const gtSlug = slug as "foodtalk" | "moneytalk" | "tourismtalk";
     const meta = COUNTRY_META.gt[slug] ?? {
       titulo: `${slug.charAt(0).toUpperCase() + slug.slice(1)} Guatemala`,
@@ -64,7 +63,13 @@ export async function getCountryTalkData(
       mes: "Junio 2026",
       analisis: "",
     };
-    return getGtTalkData(gtSlug, meta);
+    try {
+      const { getGtTalkData } = await import("./google-sheets");
+      return await getGtTalkData(gtSlug, meta);
+    } catch (err) {
+      console.warn(`[get-country-data] GT Sheets failed for ${slug}:`, (err as Error).message);
+      return buildDashboardData(slug, [], meta);
+    }
   }
 
   // HN: still uses demo JSON

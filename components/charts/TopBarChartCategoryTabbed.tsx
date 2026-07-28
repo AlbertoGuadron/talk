@@ -10,7 +10,7 @@ import {
 
 interface Props {
   profiles: ProfileData[];
-  field: "publicaciones" | "likes" | "seguidores" | "engagement";
+  field: "publicaciones" | "likes" | "seguidores" | "engagement" | "efectividad";
   color: string;
   title: string;
   subtitle?: string;
@@ -63,10 +63,15 @@ const DarkTooltip = ({
       style={{ background: "#0F1A35", border: "1px solid rgba(255,255,255,0.1)" }}
     >
       <p className="font-semibold text-white max-w-[200px] leading-tight">{item.payload.name}</p>
-      <p className="font-black mt-1" style={{ color }}>{fmtDefault(item.value)}</p>
+      <p className="font-black mt-1" style={{ color }}>{item.value}</p>
     </div>
   );
 };
+
+function fmtField(v: number, field: string): string {
+  if (field === "efectividad") return v.toFixed(4);
+  return fmtDefault(v);
+}
 
 export default function TopBarChartCategoryTabbed({ profiles, field, color, title, subtitle }: Props) {
   const [activeNetwork, setActiveNetwork] = useState<string>("TODOS");
@@ -84,6 +89,25 @@ export default function TopBarChartCategoryTabbed({ profiles, field, color, titl
       activeNetwork === "TODOS"
         ? profiles
         : profiles.filter((p) => p.network === activeNetwork);
+
+    if (field === "efectividad") {
+      const map: Record<string, { pubs: number; reacciones: number }> = {};
+      for (const p of filtered) {
+        const cat = toTitleCase(p.categoria || "Sin categoría");
+        if (!map[cat]) map[cat] = { pubs: 0, reacciones: 0 };
+        map[cat].pubs += p.publicaciones;
+        map[cat].reacciones += p.engagement;
+      }
+      return Object.entries(map)
+        .filter(([, v]) => v.reacciones > 0)
+        .map(([name, { pubs, reacciones }]) => ({
+          name,
+          value: parseFloat((pubs / reacciones).toFixed(4)),
+          fill: chartColor,
+        }))
+        .sort((a, b) => a.value - b.value)
+        .slice(0, 12);
+    }
 
     const map: Record<string, number> = {};
     for (const p of filtered) {
@@ -152,7 +176,7 @@ export default function TopBarChartCategoryTabbed({ profiles, field, color, titl
             <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.05)" />
             <XAxis
               type="number"
-              tickFormatter={fmtDefault}
+              tickFormatter={(v) => fmtField(v, field)}
               tick={{ fontSize: 10, fill: "#475569" }}
               axisLine={false}
               tickLine={false}

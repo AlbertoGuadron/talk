@@ -56,7 +56,7 @@ export default function TalkHeader({ config, meta }: Props) {
               >
                 {meta.mes}
               </span>
-              <span className="text-xs text-slate-500">Ranking mensual</span>
+              <span className="text-xs text-slate-500">Ranking semanal</span>
               <a
                 href="#metodologia"
                 className="text-xs text-slate-500 hover:text-slate-300 transition-colors underline underline-offset-2"

@@ -54,6 +54,7 @@ export interface ChartDataPoint {
   categoria?: string;
   fill?: string;
   imageLink?: string;
+  brand?: string;
 }
 
 export interface TalkDashboardData {

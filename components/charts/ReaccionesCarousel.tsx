@@ -175,13 +175,18 @@ export default function ReaccionesCarousel({
               #{current + 1}
             </span>
             <span className="text-slate-400 text-xs font-medium">
-              {fmt(slide.value)} engagement
+              {fmt(slide.value)} reacciones
             </span>
           </div>
 
-          {/* Nombre categoría */}
+          {/* Nombre categoría + marca líder */}
           <p className="text-white font-black text-3xl sm:text-4xl leading-tight drop-shadow-2xl">
             {slide.name}
+            {slide.brand && (
+              <span className="block text-base font-semibold mt-1" style={{ color: `${color}CC` }}>
+                {slide.brand}
+              </span>
+            )}
           </p>
 
           {/* Barra de progreso */}
