@@ -151,46 +151,55 @@ export function parseRetailtalkData(rows: unknown[][]): ProfileData[] {
 
 // SV moneytalk: same column order as markettalk/retailtalk (SV category-based format)
 export function parseSvMoneyTalkData(rows: unknown[][]): ProfileData[] {
+  // Columns: 0=Categoria 1=Profile 2=Network 3=Seguidores 4=Publicaciones
+  //          5=Likes 6=Comentarios 7=Engagement(total) 8=ProfileID 9=Link 10=ExtLink 11=ImageLink
   const profiles: ProfileData[] = [];
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
     if (!row[1] || String(row[1]).trim() === "") continue;
+    const likes = parseNumber(row[5]);
+    const comentarios = parseNumber(row[6]);
+    const engagement = parseNumber(row[7]);
     profiles.push({
       categoria: String(row[0] || "SIN CATEGORÍA").trim().replace(/\s+/g, " ").toUpperCase(),
       profile: String(row[1]).trim(),
       network: String(row[2] || "").toUpperCase().trim(),
       seguidores: parseNumber(row[3]),
       publicaciones: parseNumber(row[4]),
-      likes: parseNumber(row[5]),
-      comentarios: parseNumber(row[6]),
-      compartidos: parseNumber(row[7]),
-      engagement: parseNumber(row[8]),
+      likes,
+      comentarios,
+      compartidos: Math.max(0, engagement - likes - comentarios),
+      engagement,
       impresiones: 0,
-      imageLink: String(row[13] || "").trim(), // col N
+      imageLink: String(row[11] || "").trim(),
     });
   }
   return profiles;
 }
 
-// SV tourismtalk: same column order as housetalk (no categories)
+// SV tourismtalk: no categories column
+// Columns: 0=Profile 1=Network 2=Seguidores 3=Publicaciones 4=Likes 5=Comentarios
+//          6=Engagement(total) 7=ProfileID 8=Link 9=ExtLink 10=ImageLink
 export function parseSvTourismtalkData(rows: unknown[][]): ProfileData[] {
   const profiles: ProfileData[] = [];
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
     if (!row[0] || String(row[0]).trim() === "") continue;
+    const likes = parseNumber(row[4]);
+    const comentarios = parseNumber(row[5]);
+    const engagement = parseNumber(row[6]);
     profiles.push({
       categoria: "TURISMO",
       profile: String(row[0]).trim(),
       network: String(row[1] || "").toUpperCase().trim(),
       seguidores: parseNumber(row[2]),
       publicaciones: parseNumber(row[3]),
-      likes: parseNumber(row[4]),
-      comentarios: parseNumber(row[5]),
-      compartidos: parseNumber(row[6]),
-      engagement: parseNumber(row[7]),
-      impresiones: parseNumber(row[8]),
-      valorPublicitario: parseNumber(row[9]),
-      imageLink: String(row[13] || "").trim(), // col N
+      likes,
+      comentarios,
+      compartidos: Math.max(0, engagement - likes - comentarios),
+      engagement,
+      impresiones: 0,
+      imageLink: String(row[10] || "").trim(),
     });
   }
   return profiles;
