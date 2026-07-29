@@ -5,6 +5,8 @@ import {
   parseHousetalkData,
   parseMarkettalkData,
   parseRetailtalkData,
+  parseSvMoneyTalkData,
+  parseSvTourismtalkData,
   parseGtFoodtalkData,
   parseMoneyTalkData,
   parseTourismtalkData,
@@ -59,9 +61,8 @@ const SHEET_TAB: Record<TalkSlug, { datos: string; config: string; publicaciones
   housetalk:   { datos: "housetalk_datos",   config: "housetalk_config",   publicaciones: "Publicaciones_Housetalk" },
   markettalk:  { datos: "markettalk_datos",  config: "markettalk_config",  publicaciones: "Publicaciones_Markettalk" },
   retailtalk:  { datos: "retailtalk_datos",  config: "retailtalk_config",  publicaciones: "Publicaciones_Retailtalk" },
-  // GT-only (not used by getTalkData but required for exhaustive Record<TalkSlug>)
-  moneytalk:   { datos: "moneytalk_datos",   config: "moneytalk_config",   publicaciones: "Publicaciones_moneytalk" },
-  tourismtalk: { datos: "tourismtalk_datos", config: "tourismtalk_config", publicaciones: "Publicaciones_tourismtalk" },
+  moneytalk:   { datos: "moneytalk_datos",   config: "moneytalk_config",   publicaciones: "Publicaciones_Moneytalk" },
+  tourismtalk: { datos: "tourismtalk_datos", config: "tourismtalk_config", publicaciones: "Publicaciones_Tourismtalk" },
 };
 
 // GT spreadsheet tabs (no config sheet — meta comes from get-country-data.ts)
@@ -99,16 +100,19 @@ export async function getTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
   if (slug === "foodtalk") profiles = parseFoodtalkData(dataRows);
   else if (slug === "housetalk") profiles = parseHousetalkData(dataRows);
   else if (slug === "markettalk") profiles = parseMarkettalkData(dataRows);
-  else profiles = parseRetailtalkData(dataRows);
+  else if (slug === "retailtalk") profiles = parseRetailtalkData(dataRows);
+  else if (slug === "moneytalk") profiles = parseSvMoneyTalkData(dataRows);
+  else profiles = parseSvTourismtalkData(dataRows);
 
   let posts = parsePostsData(postRows, slug);
 
-  // Cache post images to Vercel Blob so they don't expire
   if (process.env.SUPABASE_URL) {
     const { syncPostImages } = await import("./image-cache");
-    const result = await syncPostImages(posts, slug);
+    // Prefix sv- so SV moneytalk/tourismtalk don't collide with GT in Supabase
+    const cacheKey = (slug === "moneytalk" || slug === "tourismtalk") ? `sv-${slug}` : slug;
+    const result = await syncPostImages(posts, cacheKey);
     posts = result.posts;
-    console.log(`[image-cache] ${slug}:`, result.stats);
+    console.log(`[image-cache] sv/${slug}:`, result.stats);
   }
 
   return buildDashboardData(slug, profiles, meta, posts);

@@ -15,7 +15,7 @@ export const COUNTRIES: CountryInfo[] = [
     code: "sv",
     name: "El Salvador",
     flag: "🇸🇻",
-    talks: ["foodtalk", "housetalk", "markettalk", "retailtalk"],
+    talks: ["foodtalk", "housetalk", "markettalk", "retailtalk", "moneytalk", "tourismtalk"],
   },
   {
     code: "hn",

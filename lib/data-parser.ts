@@ -147,6 +147,55 @@ export function parseRetailtalkData(rows: unknown[][]): ProfileData[] {
   return profiles;
 }
 
+// ── Parsers for El Salvador — moneytalk & tourismtalk ────────────────────────
+
+// SV moneytalk: same column order as markettalk/retailtalk (SV category-based format)
+export function parseSvMoneyTalkData(rows: unknown[][]): ProfileData[] {
+  const profiles: ProfileData[] = [];
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row[1] || String(row[1]).trim() === "") continue;
+    profiles.push({
+      categoria: String(row[0] || "SIN CATEGORÍA").trim().replace(/\s+/g, " ").toUpperCase(),
+      profile: String(row[1]).trim(),
+      network: String(row[2] || "").toUpperCase().trim(),
+      seguidores: parseNumber(row[3]),
+      publicaciones: parseNumber(row[4]),
+      likes: parseNumber(row[5]),
+      comentarios: parseNumber(row[6]),
+      compartidos: parseNumber(row[7]),
+      engagement: parseNumber(row[8]),
+      impresiones: 0,
+      imageLink: String(row[13] || "").trim(), // col N
+    });
+  }
+  return profiles;
+}
+
+// SV tourismtalk: same column order as housetalk (no categories)
+export function parseSvTourismtalkData(rows: unknown[][]): ProfileData[] {
+  const profiles: ProfileData[] = [];
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row[0] || String(row[0]).trim() === "") continue;
+    profiles.push({
+      categoria: "TURISMO",
+      profile: String(row[0]).trim(),
+      network: String(row[1] || "").toUpperCase().trim(),
+      seguidores: parseNumber(row[2]),
+      publicaciones: parseNumber(row[3]),
+      likes: parseNumber(row[4]),
+      comentarios: parseNumber(row[5]),
+      compartidos: parseNumber(row[6]),
+      engagement: parseNumber(row[7]),
+      impresiones: parseNumber(row[8]),
+      valorPublicitario: parseNumber(row[9]),
+      imageLink: String(row[13] || "").trim(), // col N
+    });
+  }
+  return profiles;
+}
+
 // ── Parsers for Guatemala ─────────────────────────────────────────────────────
 
 // GTM foodtalk: col order differs from SV (likes at 5, comentarios at 6, reacciones_total at 7)
