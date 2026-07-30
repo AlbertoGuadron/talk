@@ -13,7 +13,14 @@ const COUNTRY_CODES = ["sv", "hn", "gt"];
 function detectCountry(pathname: string): string | null {
   const seg = pathname.split("/").filter(Boolean);
   if (COUNTRY_CODES.includes(seg[0])) return seg[0];
-  if (TALK_SLUGS.includes(seg[0] as TalkSlug)) return "sv"; // rutas legacy SV
+  if (TALK_SLUGS.includes(seg[0] as TalkSlug)) return "sv";
+  return null;
+}
+
+function detectTalk(pathname: string): string | null {
+  const seg = pathname.split("/").filter(Boolean);
+  if (COUNTRY_CODES.includes(seg[0]) && TALK_SLUGS.includes(seg[1] as TalkSlug)) return seg[1];
+  if (TALK_SLUGS.includes(seg[0] as TalkSlug)) return seg[0];
   return null;
 }
 
@@ -25,14 +32,17 @@ export default function Navbar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
+  const [talksOpen, setTalksOpen] = useState(false);
 
-  const close = () => { setMenuOpen(false); setCountryOpen(false); };
+  const close = () => { setMenuOpen(false); setCountryOpen(false); setTalksOpen(false); };
 
   if (pathname === "/") return null;
 
   const currentCode = detectCountry(pathname);
   const currentCountry = currentCode ? getCountryInfo(currentCode) : null;
   const currentTalks = currentCode ? getCountryTalks(currentCode) : [];
+  const currentTalkSlug = detectTalk(pathname);
+  const currentTalkLabel = currentTalks.find((t) => t.slug === currentTalkSlug)?.label ?? null;
 
   return (
     <>
@@ -82,8 +92,8 @@ export default function Navbar() {
               />
             </a>
 
-            {/* Nav links — desktop */}
-            <nav className="hidden md:flex items-center gap-1">
+            {/* Nav — desktop */}
+            <nav className="hidden md:flex items-center gap-2">
               <Link
                 href="/"
                 className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 ${
@@ -93,21 +103,64 @@ export default function Navbar() {
                 Inicio
               </Link>
 
-              {currentTalks.map((talk) => {
-                const href = talkHref(currentCode!, talk.slug);
-                const active = pathname === href || pathname === `/${currentCode}/${talk.slug}` || pathname === `/${talk.slug}`;
-                return (
-                  <Link
-                    key={talk.slug}
-                    href={href}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      active ? "text-white bg-white/10" : "text-slate-400 hover:text-white hover:bg-white/5"
-                    }`}
+              {/* Talks dropdown */}
+              {currentTalks.length > 0 && (
+                <div className="relative">
+                  <button
+                    onClick={() => { setTalksOpen((v) => !v); setCountryOpen(false); }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:bg-white/10"
+                    style={{
+                      border: "1.5px solid rgba(255,255,255,0.12)",
+                      color: currentTalkSlug ? "#fff" : "#94a3b8",
+                      background: currentTalkSlug ? "rgba(255,255,255,0.08)" : "transparent",
+                    }}
                   >
-                    {talk.label}
-                  </Link>
-                );
-              })}
+                    <span>{currentTalkLabel ?? "Rankings"}</span>
+                    <svg
+                      className={`w-3.5 h-3.5 opacity-70 transition-transform duration-200 ${talksOpen ? "rotate-180" : ""}`}
+                      fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {talksOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setTalksOpen(false)} />
+                      <div
+                        className="absolute left-0 top-full mt-2 z-20 rounded-2xl overflow-hidden py-1 min-w-[200px]"
+                        style={{
+                          background: "rgba(10,16,40,0.98)",
+                          border: "1px solid rgba(255,255,255,0.10)",
+                          boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
+                        }}
+                      >
+                        {currentTalks.map((talk) => {
+                          const href = talkHref(currentCode!, talk.slug);
+                          const active = talk.slug === currentTalkSlug;
+                          return (
+                            <Link
+                              key={talk.slug}
+                              href={href}
+                              onClick={() => setTalksOpen(false)}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-white/6"
+                              style={{
+                                color: active ? "#fff" : "#94a3b8",
+                                fontWeight: active ? 700 : 500,
+                              }}
+                            >
+                              <span>{talk.label}</span>
+                              {active && (
+                                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                              )}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </nav>
 
             {/* Right side */}
@@ -115,7 +168,7 @@ export default function Navbar() {
               {/* Country picker */}
               <div className="relative">
                 <button
-                  onClick={() => setCountryOpen((v) => !v)}
+                  onClick={() => { setCountryOpen((v) => !v); setTalksOpen(false); }}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:bg-white/10"
                   style={{
                     border: "1.5px solid rgba(99,102,241,0.5)",
@@ -124,15 +177,17 @@ export default function Navbar() {
                   }}
                 >
                   <span className="text-lg leading-none">{currentCountry?.flag ?? "🌎"}</span>
-                  <span>{currentCountry?.name ?? "Seleccionar país"}</span>
-                  <svg className="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="hidden sm:inline">{currentCountry?.name ?? "País"}</span>
+                  <svg
+                    className={`w-3.5 h-3.5 opacity-70 transition-transform duration-200 ${countryOpen ? "rotate-180" : ""}`}
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
                 {countryOpen && (
                   <>
-                    {/* Overlay para cerrar */}
                     <div className="fixed inset-0 z-10" onClick={() => setCountryOpen(false)} />
                     <div
                       className="absolute right-0 top-full mt-2 z-20 rounded-2xl overflow-hidden py-1 min-w-[180px]"
@@ -207,19 +262,30 @@ export default function Navbar() {
               >
                 Inicio
               </Link>
-              {currentTalks.map((talk) => {
-                const href = talkHref(currentCode!, talk.slug);
-                return (
-                  <Link
-                    key={talk.slug}
-                    href={href}
-                    onClick={close}
-                    className="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all"
-                  >
-                    {talk.label}
-                  </Link>
-                );
-              })}
+
+              {/* Talks en móvil */}
+              {currentTalks.length > 0 && (
+                <div>
+                  <p className="px-4 pt-3 pb-1 text-xs font-bold uppercase tracking-widest text-slate-600">Rankings</p>
+                  {currentTalks.map((talk) => {
+                    const href = talkHref(currentCode!, talk.slug);
+                    const active = talk.slug === currentTalkSlug;
+                    return (
+                      <Link
+                        key={talk.slug}
+                        href={href}
+                        onClick={close}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm transition-all hover:bg-white/5"
+                        style={{ color: active ? "#fff" : "#94a3b8", fontWeight: active ? 700 : 500 }}
+                      >
+                        <span>{talk.label}</span>
+                        {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400" />}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* Países en móvil */}
               <div className="mt-2 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
                 <p className="px-4 pb-1 text-xs font-bold uppercase tracking-widest text-slate-600">País</p>
@@ -241,7 +307,7 @@ export default function Navbar() {
         )}
       </header>
 
-      {/* Barra CTA fija — solo móvil (fuera del header para evitar bug de backdrop-filter) */}
+      {/* Barra CTA fija — solo móvil */}
       <div
         className="sm:hidden fixed top-20 left-0 right-0 z-40 px-4 py-2"
         style={{ background: "rgba(6,11,31,0.92)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}
