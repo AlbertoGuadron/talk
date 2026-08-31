@@ -308,13 +308,15 @@ export function parseHnTourismtalkData(rows: unknown[][]): ProfileData[] { retur
 // ── Column mapping per talk for posts ────────────────────────────────────────
 type PostColMap = { date: number; msg: number; cat: number; profile: number; network: number; engagement: number; link: number; img: number };
 
+// Publicaciones con categoría (15 cols): Date Msg Cat Profile Network Likes Com Comp Eng Views MsgID ProfileID Link ExtLink ImageLink
+// Publicaciones sin categoría (14 cols): Date Msg Profile Network Likes Com Comp Eng Views MsgID ProfileID Link ExtLink ImageLink
 const POST_COLS: Record<TalkSlug, PostColMap> = {
   foodtalk:    { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 8, link: 12, img: 14 },
-  housetalk:   { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 8, link: 12, img: 14 },
+  housetalk:   { date: 0, msg: 1, cat: -1, profile: 2, network: 3, engagement: 7, link: 11, img: 13 },
   markettalk:  { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 8, link: 12, img: 14 },
   retailtalk:  { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 8, link: 12, img: 14 },
   moneytalk:   { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 8, link: 12, img: 14 },
-  tourismtalk: { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 8, link: 12, img: 14 },
+  tourismtalk: { date: 0, msg: 1, cat: -1, profile: 2, network: 3, engagement: 7, link: 11, img: 13 },
 };
 
 export function parsePostsData(rows: unknown[][], slug: TalkSlug): PostData[] {
