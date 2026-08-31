@@ -232,14 +232,17 @@ export function parseGtFoodtalkData(rows: unknown[][]): ProfileData[] {
   return profiles;
 }
 
-// GTM moneytalk: has categories but no combined reactions column
+// GTM moneytalk: col 7 = Reacciones total (column added), col 9 = impresiones, col 14 = imageLink
 export function parseMoneyTalkData(rows: unknown[][]): ProfileData[] {
+  // Columns: 0=Categoria 1=Profile 2=Network 3=Seguidores 4=Publicaciones
+  //          5=Likes 6=Comentarios 7=Reacciones+Com+Comp(total) 8=... 9=Impresiones ... 14=ImageLink
   const profiles: ProfileData[] = [];
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
     if (!row[1] || String(row[1]).trim() === "") continue;
     const likes = parseNumber(row[5]);
     const comentarios = parseNumber(row[6]);
+    const engagement = parseNumber(row[7]);
     profiles.push({
       categoria: String(row[0] || "SIN CATEGORÍA").trim().replace(/\s+/g, " ").toUpperCase(),
       profile: String(row[1]).trim(),
@@ -248,10 +251,10 @@ export function parseMoneyTalkData(rows: unknown[][]): ProfileData[] {
       publicaciones: parseNumber(row[4]),
       likes,
       comentarios,
-      compartidos: 0,
-      engagement: likes + comentarios, // no combined column; compute from parts
-      impresiones: parseNumber(row[8]),
-      imageLink: String(row[13] || "").trim(),
+      compartidos: Math.max(0, engagement - likes - comentarios),
+      engagement,
+      impresiones: parseNumber(row[9]),
+      imageLink: String(row[14] || "").trim(),
     });
   }
   return profiles;
@@ -282,6 +285,61 @@ export function parseTourismtalkData(rows: unknown[][]): ProfileData[] {
   return profiles;
 }
 
+// ── Parsers for Honduras ──────────────────────────────────────────────────────
+
+// HN foodtalk: same column layout as GT foodtalk (col 7=engagement, col 14=imageLink)
+export function parseHnFoodtalkData(rows: unknown[][]): ProfileData[] {
+  // Columns: 0=Categoria 1=Profile 2=Network 3=Seguidores 4=Publicaciones
+  //          5=Likes 6=Comentarios 7=Engagement(total) 8=... 9=Impresiones ... 14=ImageLink
+  const profiles: ProfileData[] = [];
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row[1] || String(row[1]).trim() === "") continue;
+    const likes = parseNumber(row[5]);
+    const comentarios = parseNumber(row[6]);
+    const engagement = parseNumber(row[7]);
+    profiles.push({
+      categoria: String(row[0] || "SIN CATEGORÍA").trim().replace(/\s+/g, " ").toUpperCase(),
+      profile: String(row[1]).trim(),
+      network: String(row[2] || "").toUpperCase().trim(),
+      seguidores: parseNumber(row[3]),
+      publicaciones: parseNumber(row[4]),
+      likes,
+      comentarios,
+      compartidos: Math.max(0, engagement - likes - comentarios),
+      engagement,
+      impresiones: parseNumber(row[9]),
+      imageLink: String(row[14] || "").trim(),
+    });
+  }
+  return profiles;
+}
+
+// HN retailtalk: same column layout as SV retailtalk (col 8=engagement, col 13=imageLink)
+export function parseHnRetailtalkData(rows: unknown[][]): ProfileData[] {
+  // Columns: 0=Categoria 1=Profile 2=Network 3=Seguidores 4=Publicaciones
+  //          5=Likes 6=Comentarios 7=Compartidos 8=Engagement(total) ... 13=ImageLink
+  const profiles: ProfileData[] = [];
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row[1] || String(row[1]).trim() === "") continue;
+    profiles.push({
+      categoria: String(row[0] || "SIN CATEGORÍA").trim().replace(/\s+/g, " ").toUpperCase(),
+      profile: String(row[1]).trim(),
+      network: String(row[2] || "").toUpperCase().trim(),
+      seguidores: parseNumber(row[3]),
+      publicaciones: parseNumber(row[4]),
+      likes: parseNumber(row[5]),
+      comentarios: parseNumber(row[6]),
+      compartidos: parseNumber(row[7]),
+      engagement: parseNumber(row[8]),
+      impresiones: 0,
+      imageLink: String(row[13] || "").trim(),
+    });
+  }
+  return profiles;
+}
+
 // ── Column mapping per talk for posts ────────────────────────────────────────
 type PostColMap = { date: number; msg: number; cat: number; profile: number; network: number; engagement: number; link: number; img: number };
 
@@ -291,7 +349,7 @@ const POST_COLS: Record<TalkSlug, PostColMap> = {
   markettalk:  { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 5, link: 11, img: 13 },
   retailtalk:  { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 8, link: 12, img: 14 },
   moneytalk:   { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 8, link: 12, img: 14 },
-  tourismtalk: { date: 0, msg: 1, cat: -1, profile: 2, network: 3, engagement: 7, link: 11, img: 13 },
+  tourismtalk: { date: 0, msg: 1, cat: 2,  profile: 3, network: 4, engagement: 8, link: 12, img: 14 },
 };
 
 export function parsePostsData(rows: unknown[][], slug: TalkSlug): PostData[] {

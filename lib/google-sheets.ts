@@ -10,6 +10,8 @@ import {
   parseGtFoodtalkData,
   parseMoneyTalkData,
   parseTourismtalkData,
+  parseHnFoodtalkData,
+  parseHnRetailtalkData,
   parsePostsData,
   buildDashboardData,
 } from "./data-parser";
@@ -71,6 +73,13 @@ const GT_SHEET_TAB: Record<GtSlug, { datos: string; publicaciones: string }> = {
   foodtalk:    { datos: "foodtalk_datos",    publicaciones: "Publicaciones_foodtalk" },
   moneytalk:   { datos: "moneytalk_datos",   publicaciones: "Publicaciones_moneytalk" },
   tourismtalk: { datos: "tourismtalk_datos", publicaciones: "Publicaciones_tourismtalk" },
+};
+
+// HN spreadsheet tabs
+type HnSlug = "foodtalk" | "retailtalk";
+const HN_SHEET_TAB: Record<HnSlug, { datos: string; config: string; publicaciones: string }> = {
+  foodtalk:   { datos: "foodtalk_datos",   config: "foodtalk_config",   publicaciones: "Publicaciones_Foodtalk" },
+  retailtalk: { datos: "retailtalk_datos", config: "retailtalk_config", publicaciones: "Publicaciones_Retailtalk" },
 };
 
 function extractSpreadsheetId(raw: string): string {
@@ -145,4 +154,36 @@ export async function getGtTalkData(slug: GtSlug, meta: TalkMeta): Promise<TalkD
   }
 
   return buildDashboardData(slug as TalkSlug, profiles, meta, posts);
+}
+
+export async function getHnTalkData(slug: HnSlug, meta: TalkMeta): Promise<TalkDashboardData> {
+  const spreadsheetId = extractSpreadsheetId(process.env.GOOGLE_SPREADSHEET_HN_ID!);
+  const postsSpreadsheetId = process.env.GOOGLE_SPREADSHEET_HN_POSTS_ID
+    ? extractSpreadsheetId(process.env.GOOGLE_SPREADSHEET_HN_POSTS_ID)
+    : spreadsheetId;
+  const tabs = HN_SHEET_TAB[slug];
+
+  const [dataRows, configRows, postRows] = await Promise.all([
+    getSheetValues(spreadsheetId, `${tabs.datos}!A1:P500`),
+    getSheetValues(spreadsheetId, `${tabs.config}!A1:B20`).catch(() => [] as unknown[][]),
+    getSheetValues(postsSpreadsheetId, `${tabs.publicaciones}!A1:O10000`).catch(() => [] as unknown[][]),
+  ]);
+
+  const configMeta = configRows.length > 1 ? parseConfigRows(configRows) : null;
+  const finalMeta = configMeta?.titulo ? configMeta : meta;
+
+  const profiles = slug === "foodtalk"
+    ? parseHnFoodtalkData(dataRows)
+    : parseHnRetailtalkData(dataRows);
+
+  let posts = parsePostsData(postRows, slug as TalkSlug);
+
+  if (process.env.SUPABASE_URL) {
+    const { syncPostImages } = await import("./image-cache");
+    const result = await syncPostImages(posts, `hn-${slug}`);
+    posts = result.posts;
+    console.log(`[image-cache] hn/${slug}:`, result.stats);
+  }
+
+  return buildDashboardData(slug as TalkSlug, profiles, finalMeta, posts);
 }

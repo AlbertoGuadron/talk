@@ -1,5 +1,4 @@
 import type { TalkSlug, TalkDashboardData, TalkMeta } from "@/types";
-import type { ProfileData } from "@/types";
 import type { CountryCode } from "./countries-config";
 import { buildDashboardData } from "./data-parser";
 
@@ -72,14 +71,28 @@ export async function getCountryTalkData(
     }
   }
 
-  // HN: still uses demo JSON
-  const demoData = await import(`./demo-data/${pais}/${slug}.json`);
-  const profiles = demoData.default as ProfileData[];
-  const meta = COUNTRY_META[pais][slug] ?? {
-    titulo: `${slug.charAt(0).toUpperCase() + slug.slice(1)} ${pais.toUpperCase()}`,
+  // HN: Google Sheets
+  if (pais === "hn") {
+    const hnSlug = slug as "foodtalk" | "retailtalk";
+    const meta = COUNTRY_META.hn[slug] ?? {
+      titulo: `${slug.charAt(0).toUpperCase() + slug.slice(1)} Honduras`,
+      subtitulo: "Ranking de presencia en redes sociales · Honduras",
+      mes: "Agosto 2026",
+      analisis: "",
+    };
+    try {
+      const { getHnTalkData } = await import("./google-sheets");
+      return await getHnTalkData(hnSlug, meta);
+    } catch (err) {
+      console.warn(`[get-country-data] HN Sheets failed for ${slug}:`, (err as Error).message);
+      return buildDashboardData(slug, [], meta);
+    }
+  }
+
+  return buildDashboardData(slug, [], {
+    titulo: `${slug} ${pais.toUpperCase()}`,
     subtitulo: "Ranking de presencia en redes sociales",
-    mes: "Junio 2026",
+    mes: "Agosto 2026",
     analisis: "",
-  };
-  return buildDashboardData(slug, profiles, meta);
+  });
 }
