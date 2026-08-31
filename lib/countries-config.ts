@@ -21,13 +21,13 @@ export const COUNTRIES: CountryInfo[] = [
     code: "hn",
     name: "Honduras",
     flag: "🇭🇳",
-    talks: ["foodtalk", "retailtalk"],
+    talks: ["foodtalk", "housetalk", "markettalk", "retailtalk", "moneytalk", "tourismtalk"],
   },
   {
     code: "gt",
     name: "Guatemala",
     flag: "🇬🇹",
-    talks: ["foodtalk", "moneytalk", "tourismtalk"],
+    talks: ["foodtalk", "housetalk", "markettalk", "retailtalk", "moneytalk", "tourismtalk"],
   },
 ];
 

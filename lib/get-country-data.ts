@@ -5,43 +5,20 @@ import { buildDashboardData } from "./data-parser";
 const COUNTRY_META: Record<CountryCode, Record<string, TalkMeta>> = {
   sv: {},
   hn: {
-    foodtalk: {
-      titulo: "Así se movió el mercado de alimentos en Honduras",
-      subtitulo: "Ranking de presencia en redes sociales · Honduras",
-      mes: "Junio 2026",
-      analisis: "Junio mostró una alta actividad en fast food: McDonald's y Pollo Campero concentraron la mayor parte del engagement, mientras que las marcas locales ganaron terreno en eficiencia de contenido.",
-      analisis2: "El mercado hondureño de alimentos presenta una dinámica competitiva donde las grandes cadenas dominan el volumen pero las marcas locales encuentran nichos de mayor eficiencia.",
-    },
-    retailtalk: {
-      titulo: "Así se movió el mercado de retail en Honduras",
-      subtitulo: "Ranking de presencia en redes sociales · Honduras",
-      mes: "Junio 2026",
-      analisis: "La Colonia y Walmart lideraron la actividad en retail, con una presencia dominante en Facebook e Instagram. Las tiendas especializadas muestran mejores tasas de engagement relativo.",
-      analisis2: "El retail hondureño está protagonizado por grandes cadenas con alta inversión en contenido, pero las tiendas especializadas superan en engagement rate promedio.",
-    },
+    foodtalk:    { titulo: "Así se movió el mercado de alimentos en Honduras",     subtitulo: "Ranking semanal de presencia en redes sociales · Honduras", mes: "Agosto 2026", analisis: "", analisis2: "" },
+    housetalk:   { titulo: "Así se movió el sector inmobiliario en Honduras",      subtitulo: "Ranking semanal de presencia en redes sociales · Honduras", mes: "Agosto 2026", analisis: "", analisis2: "" },
+    markettalk:  { titulo: "Así se movió el mercado de consumo masivo en Honduras",subtitulo: "Ranking semanal de presencia en redes sociales · Honduras", mes: "Agosto 2026", analisis: "", analisis2: "" },
+    retailtalk:  { titulo: "Así se movió el mercado de retail en Honduras",        subtitulo: "Ranking semanal de presencia en redes sociales · Honduras", mes: "Agosto 2026", analisis: "", analisis2: "" },
+    moneytalk:   { titulo: "Así se movió el sector financiero en Honduras",        subtitulo: "Ranking semanal de presencia en redes sociales · Honduras", mes: "Agosto 2026", analisis: "", analisis2: "" },
+    tourismtalk: { titulo: "Así se movió el sector turístico en Honduras",         subtitulo: "Ranking semanal de presencia en redes sociales · Honduras", mes: "Agosto 2026", analisis: "", analisis2: "" },
   },
   gt: {
-    foodtalk: {
-      titulo: "Así se movió el mercado de alimentos en Guatemala",
-      subtitulo: "Ranking de presencia en redes sociales · Guatemala",
-      mes: "Junio 2026",
-      analisis: "Pollo Campero mantuvo su dominio en Guatemala con la mayor comunidad digital, mientras McDonald's y Domino's compitieron por el engagement en contenido pagado y orgánico.",
-      analisis2: "Guatemala presenta el mercado de alimentos más activo de Centroamérica en redes sociales, con marcas globales y locales compitiendo en todos los indicadores.",
-    },
-    moneytalk: {
-      titulo: "Así se movió el sector financiero en Guatemala",
-      subtitulo: "Ranking de presencia en redes sociales · Guatemala",
-      mes: "Junio 2026",
-      analisis: "Los bancos y aseguradoras guatemaltecas intensificaron su presencia digital, con bancos como Bantrab y BAC liderando en seguidores y engagement en Facebook e Instagram.",
-      analisis2: "El sector financiero guatemalteco apuesta por el contenido educativo y de beneficios como principal motor de interacción, superando a la publicidad tradicional en efectividad digital.",
-    },
-    tourismtalk: {
-      titulo: "Así se movió el sector turístico en Guatemala",
-      subtitulo: "Ranking de presencia en redes sociales · Guatemala",
-      mes: "Junio 2026",
-      analisis: "Los destinos turísticos y hoteles guatemaltecos incrementaron su actividad en redes sociales, con operadores de turismo aventura y destinos culturales liderando en engagement.",
-      analisis2: "Guatemala aprovecha su riqueza cultural y natural como diferenciador clave en contenido digital, generando alto engagement con publicaciones de experiencias auténticas.",
-    },
+    foodtalk:    { titulo: "Así se movió el mercado de alimentos en Guatemala",      subtitulo: "Ranking semanal de presencia en redes sociales · Guatemala", mes: "Agosto 2026", analisis: "", analisis2: "" },
+    housetalk:   { titulo: "Así se movió el sector inmobiliario en Guatemala",       subtitulo: "Ranking semanal de presencia en redes sociales · Guatemala", mes: "Agosto 2026", analisis: "", analisis2: "" },
+    markettalk:  { titulo: "Así se movió el mercado de consumo masivo en Guatemala", subtitulo: "Ranking semanal de presencia en redes sociales · Guatemala", mes: "Agosto 2026", analisis: "", analisis2: "" },
+    retailtalk:  { titulo: "Así se movió el mercado de retail en Guatemala",         subtitulo: "Ranking semanal de presencia en redes sociales · Guatemala", mes: "Agosto 2026", analisis: "", analisis2: "" },
+    moneytalk:   { titulo: "Así se movió el sector financiero en Guatemala",         subtitulo: "Ranking semanal de presencia en redes sociales · Guatemala", mes: "Agosto 2026", analisis: "", analisis2: "" },
+    tourismtalk: { titulo: "Así se movió el sector turístico en Guatemala",          subtitulo: "Ranking semanal de presencia en redes sociales · Guatemala", mes: "Agosto 2026", analisis: "", analisis2: "" },
   },
 };
 
@@ -55,11 +32,11 @@ export async function getCountryTalkData(
   }
 
   if (pais === "gt") {
-    const gtSlug = slug as "foodtalk" | "moneytalk" | "tourismtalk";
+    const gtSlug = slug as "foodtalk" | "moneytalk" | "tourismtalk" | "housetalk" | "markettalk" | "retailtalk";
     const meta = COUNTRY_META.gt[slug] ?? {
       titulo: `${slug.charAt(0).toUpperCase() + slug.slice(1)} Guatemala`,
-      subtitulo: "Ranking de presencia en redes sociales · Guatemala",
-      mes: "Junio 2026",
+      subtitulo: "Ranking semanal de presencia en redes sociales · Guatemala",
+      mes: "Agosto 2026",
       analisis: "",
     };
     try {
@@ -73,10 +50,10 @@ export async function getCountryTalkData(
 
   // HN: Google Sheets
   if (pais === "hn") {
-    const hnSlug = slug as "foodtalk" | "retailtalk";
+    const hnSlug = slug as "foodtalk" | "moneytalk" | "tourismtalk" | "housetalk" | "markettalk" | "retailtalk";
     const meta = COUNTRY_META.hn[slug] ?? {
       titulo: `${slug.charAt(0).toUpperCase() + slug.slice(1)} Honduras`,
-      subtitulo: "Ranking de presencia en redes sociales · Honduras",
+      subtitulo: "Ranking semanal de presencia en redes sociales · Honduras",
       mes: "Agosto 2026",
       analisis: "",
     };
@@ -90,7 +67,7 @@ export async function getCountryTalkData(
   }
 
   return buildDashboardData(slug, [], {
-    titulo: `${slug} ${pais.toUpperCase()}`,
+    titulo: slug,
     subtitulo: "Ranking de presencia en redes sociales",
     mes: "Agosto 2026",
     analisis: "",
