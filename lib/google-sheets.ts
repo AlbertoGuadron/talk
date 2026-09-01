@@ -21,6 +21,7 @@ import {
   parseHnTourismtalkData,
   parsePostsData,
   buildDashboardData,
+  SV_POST_COLS_OVERRIDE,
 } from "./data-parser";
 import type { TalkDashboardData } from "@/types";
 
@@ -40,11 +41,20 @@ async function getSheetValues(
 ): Promise<unknown[][]> {
   const auth = getAuth();
   const sheets = google.sheets({ version: "v4", auth });
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range,
-  });
-  return (response.data.values as unknown[][]) || [];
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      const response = await sheets.spreadsheets.values.get({ spreadsheetId, range });
+      return (response.data.values as unknown[][]) || [];
+    } catch (err) {
+      const code = (err as { code?: number }).code;
+      if ((code === 429 || code === 503) && attempt < 3) {
+        await new Promise((r) => setTimeout(r, (attempt + 1) * 15000));
+        continue;
+      }
+      throw err;
+    }
+  }
+  return [];
 }
 
 function parseConfigRows(rows: unknown[][]): TalkMeta {
@@ -114,7 +124,10 @@ export async function getTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
   const [dataRows, configRows, postRows] = await Promise.all([
     getSheetValues(spreadsheetId, `${tabs.datos}!A1:P500`),
     getSheetValues(spreadsheetId, `${tabs.config}!A1:B20`),
-    getSheetValues(postsSpreadsheetId, `${tabs.publicaciones}!A1:O10000`).catch(() => [] as unknown[][]),
+    getSheetValues(postsSpreadsheetId, `${tabs.publicaciones}!A1:O10000`).catch((err: Error) => {
+      console.warn(`[sv/${slug}] publicaciones fetch failed (tab: ${tabs.publicaciones}):`, err.message);
+      return [] as unknown[][];
+    }),
   ]);
 
   const meta = parseConfigRows(configRows);
@@ -127,7 +140,8 @@ export async function getTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
   else if (slug === "moneytalk") profiles = parseSvMoneyTalkData(dataRows);
   else profiles = parseSvTourismtalkData(dataRows);
 
-  let posts = parsePostsData(postRows, slug);
+  const svColOverride = SV_POST_COLS_OVERRIDE[slug];
+  let posts = parsePostsData(postRows, slug, svColOverride);
 
   if (process.env.SUPABASE_URL) {
     const { syncPostImages } = await import("./image-cache");
