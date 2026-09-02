@@ -96,9 +96,14 @@ export default function TalkDashboard({ data, config }: Props) {
           {meta.titulo}
         </h2>
         {meta.analisis && (
-          <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-3xl">
-            {meta.analisis}
-          </p>
+          <div className="text-slate-400 text-sm leading-relaxed mb-6 max-w-3xl space-y-3">
+            {meta.analisis.split(/\n+/).filter(Boolean).map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
+            {meta.analisis2 && meta.analisis2.split(/\n+/).filter(Boolean).map((p, i) => (
+              <p key={`a2-${i}`}>{p}</p>
+            ))}
+          </div>
         )}
 
         <div
