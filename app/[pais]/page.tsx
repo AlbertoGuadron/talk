@@ -1,14 +1,16 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { getCountryInfo, getCountryTalks } from "@/lib/countries-config";
-import { getCountryTalkData } from "@/lib/get-country-data";
-import type { CountryCode } from "@/lib/countries-config";
+import { getCountryInfo, getCountryTalks, COUNTRIES } from "@/lib/countries-config";
 import NetworkCanvas from "@/components/NetworkCanvas";
 import TalkCard from "@/components/ui/TalkCard";
-import type { TalkCardStats } from "@/components/ui/TalkCard";
 
 export const revalidate = false;
+
+// Pre-build all country pages at deploy time
+export async function generateStaticParams() {
+  return COUNTRIES.map((c) => ({ pais: c.code }));
+}
 
 interface Props {
   params: Promise<{ pais: string }>;
@@ -21,29 +23,8 @@ export default async function CountryPage({ params }: Props) {
 
   const talks = getCountryTalks(pais);
 
-  // Solo fetchear stats para países con datos JSON (rápidos); SV usa Google Sheets y tarda
-  const statsMap: Record<string, TalkCardStats | undefined> = {};
-  if (pais === "hn") {
-    const statsResults = await Promise.all(
-      talks.map(async (talk) => {
-        try {
-          const data = await getCountryTalkData(pais as CountryCode, talk.slug);
-          return {
-            slug: talk.slug,
-            stats: {
-              brands: data.stats.totalPerfiles,
-              posts: data.stats.totalPublicaciones,
-              reactions: data.stats.totalReacciones,
-              lastUpdate: data.meta.mes,
-            } satisfies TalkCardStats,
-          };
-        } catch {
-          return { slug: talk.slug, stats: undefined };
-        }
-      })
-    );
-    statsResults.forEach((r) => { statsMap[r.slug] = r.stats; });
-  }
+  // Stats are shown on individual talk pages — avoid 18 Sheets API calls here
+  const statsMap: Record<string, undefined> = {};
 
   return (
     <div>

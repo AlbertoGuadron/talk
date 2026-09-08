@@ -29,10 +29,14 @@ export async function POST(req: NextRequest) {
   }
   revalidatePath("/");
 
+  revalidatePath("/sv", "page");
+  revalidatePath("/gt", "page");
+  revalidatePath("/hn", "page");
+
   const pages = [
+    "/", "/sv", "/gt", "/hn",
     ...SLUGS.map(s => `/${s}`),
     ...["gt", "hn"].flatMap(p => SLUGS.map(s => `/${p}/${s}`)),
-    "/",
   ];
 
   // Warm up: pre-generate all pages in parallel so the first real visitor
