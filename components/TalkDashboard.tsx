@@ -139,7 +139,7 @@ export default function TalkDashboard({ data, config }: Props) {
       {/* ── Indicadores generales ─────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         <StatsCard label="Perfiles monitoreados" value={fmt(stats.totalPerfiles)}       icon="👥" color={config.color} colorLight={config.colorLight} />
-        <StatsCard label="Total seguidores"       value={fmt(stats.totalSeguidores)}    icon="📣" color={config.color} colorLight={config.colorLight} />
+        <StatsCard label="Seguidores acumulados"   value={fmt(stats.totalSeguidores)}    icon="📣" color={config.color} colorLight={config.colorLight} />
         <StatsCard label="Total publicaciones"    value={fmt(stats.totalPublicaciones)} icon="📝" color={config.color} colorLight={config.colorLight} />
         <StatsCard label="Total reacciones"       value={fmt(stats.totalReacciones)}    icon="❤️" color={config.color} colorLight={config.colorLight} />
         <StatsCard label="Tasa de engagement"     value={engagementRateStr}             icon="📊" color={config.color} colorLight={config.colorLight} />
@@ -250,7 +250,7 @@ export default function TalkDashboard({ data, config }: Props) {
           ¿Quiere conocer cómo se desempeña su marca dentro de esta categoría?
         </h3>
         <p className="text-slate-400 text-sm mb-6 max-w-xl mx-auto">
-          Cotice un análisis personalizado con comparación competitiva, desempeño por plataforma y oportunidades de crecimiento.
+          Solicite el benchmark de su marca y reciba su posición competitiva, contenidos ganadores y oportunidades accionables del mes.
         </p>
         <Link
           href="/cotizar"

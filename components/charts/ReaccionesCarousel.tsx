@@ -56,7 +56,7 @@ export default function ReaccionesCarousel({
   data,
   color,
   title = "Top 10 Reacciones del Mes",
-  subtitle = "Categorías con mayor engagement",
+  subtitle = "Total de reacciones por categoría",
 }: Props) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);

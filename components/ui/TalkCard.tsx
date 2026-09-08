@@ -57,7 +57,7 @@ export default function TalkCard({ talk, delay = 0, href, stats }: Props) {
           <div className="grid grid-cols-2 gap-2 mb-5">
             <div className="rounded-xl p-2.5 text-center" style={{ background: "rgba(255,255,255,0.04)" }}>
               <p className="text-lg font-black text-white leading-none">{fmt(stats.brands)}</p>
-              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">Marcas monitoreadas</p>
+              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">Perfiles monitoreados</p>
             </div>
             <div className="rounded-xl p-2.5 text-center" style={{ background: "rgba(255,255,255,0.04)" }}>
               <p className="text-lg font-black text-white leading-none">{fmt(stats.posts)}</p>

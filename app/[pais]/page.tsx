@@ -193,7 +193,7 @@ export default async function CountryPage({ params }: Props) {
               <span className="text-gradient">explorar</span>
             </h2>
             <p className="text-slate-400 max-w-xl mx-auto text-sm">
-              Acceda a los rankings de la última semana y descubra quién está liderando, qué contenidos están generando mayor impacto y dónde están las principales oportunidades.
+              Explore el desempeño del mes y descubra quién está liderando, qué contenidos generan mayor impacto y dónde están las oportunidades.
             </p>
           </div>
 
@@ -234,7 +234,7 @@ export default async function CountryPage({ params }: Props) {
             <span className="text-gradient">{country.name}</span>?
           </h2>
           <p className="text-slate-400 mb-10 text-base">
-            Cotice un análisis personalizado con comparación competitiva, desempeño por plataforma y oportunidades de crecimiento.
+            Solicite el benchmark de su marca y reciba su posición competitiva, contenidos ganadores y oportunidades accionables del mes.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link

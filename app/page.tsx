@@ -97,7 +97,7 @@ export default function Home() {
             Elija el mercado que quiere explorar
           </h2>
           <p className="text-slate-500 text-sm text-center mb-5">
-            Acceda a los rankings de la última semana y descubra quién está liderando, qué contenidos están generando mayor impacto y dónde están las principales oportunidades.
+            Explore el desempeño del mes y descubra quién está liderando, qué contenidos generan mayor impacto y dónde están las oportunidades.
           </p>
 
           {/* Lista de talks disponibles */}

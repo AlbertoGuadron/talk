@@ -216,7 +216,7 @@ export default function TopPostsGrid({ posts, color, hasCategoria }: Props) {
                 : "Top 10 Publicaciones del Período"}
             </h3>
             <p className="text-slate-500 text-xs mt-0.5">
-              Publicaciones con mayor engagement del mes
+              Publicaciones con más reacciones del mes
             </p>
           </div>
 

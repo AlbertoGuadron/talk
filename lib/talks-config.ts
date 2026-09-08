@@ -3,7 +3,7 @@ import { TalkConfig, TalkSlug } from "@/types";
 export const TALKS: TalkConfig[] = [
   {
     slug: "foodtalk",
-    label: "Foodtalk",
+    label: "FoodTalk",
     description: "Ranking de marcas de alimentos y restaurantes en redes sociales",
     color: "#FF1493",
     colorLight: "rgba(255,20,147,0.15)",
@@ -13,7 +13,7 @@ export const TALKS: TalkConfig[] = [
   },
   {
     slug: "housetalk",
-    label: "Housetalk",
+    label: "HouseTalk",
     description: "Ranking de proyectos inmobiliarios en redes sociales",
     color: "#FF8C00",
     colorLight: "rgba(255,140,0,0.15)",
@@ -23,7 +23,7 @@ export const TALKS: TalkConfig[] = [
   },
   {
     slug: "markettalk",
-    label: "Markettalk",
+    label: "MarketTalk",
     description: "Ranking de marcas del mercado general en redes sociales",
     color: "#6B8E23",
     colorLight: "rgba(107,142,35,0.15)",
@@ -33,7 +33,7 @@ export const TALKS: TalkConfig[] = [
   },
   {
     slug: "retailtalk",
-    label: "Retailtalk",
+    label: "RetailTalk",
     description: "Ranking de marcas de retail y comercio en redes sociales",
     color: "#00CED1",
     colorLight: "rgba(0,206,209,0.15)",
@@ -43,7 +43,7 @@ export const TALKS: TalkConfig[] = [
   },
   {
     slug: "moneytalk",
-    label: "Moneytalk",
+    label: "MoneyTalk",
     description: "Ranking de marcas del sector financiero en redes sociales",
     color: "#10B981",
     colorLight: "rgba(16,185,129,0.15)",
@@ -53,7 +53,7 @@ export const TALKS: TalkConfig[] = [
   },
   {
     slug: "tourismtalk",
-    label: "Tourismtalk",
+    label: "TourismTalk",
     description: "Ranking de marcas del sector turismo en redes sociales",
     color: "#0EA5E9",
     colorLight: "rgba(14,165,233,0.15)",
