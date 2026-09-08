@@ -2,6 +2,18 @@ import { ProfileData, PostData, TalkDashboardData, TalkMeta, ChartDataPoint } fr
 import { NETWORK_COLORS, TALK_COLORS } from "./talks-config";
 import type { TalkSlug } from "@/types";
 
+// Dates in Google Sheets are stored in UTC. Convert to GMT-6 (Central America) so that
+// posts published late on the last day of the month aren't misclassified as the next month.
+function utcToGmt6Date(raw: string): string {
+  if (!raw) return raw;
+  // Only apply offset when the string contains a time component (HH:MM)
+  if (!/\d{1,2}:\d{2}/.test(raw)) return raw;
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) return raw;
+  const gmt6 = new Date(d.getTime() - 6 * 60 * 60 * 1000);
+  return gmt6.toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
 function parseNumber(val: unknown): number {
   if (val === null || val === undefined || val === "-" || val === "") return 0;
   if (typeof val === "number") return val;
@@ -334,7 +346,7 @@ export function parsePostsData(rows: unknown[][], slug: TalkSlug, colOverride?: 
     const profile = c.profile >= 0 ? String(row[c.profile] || "").trim() : "";
     if (!profile) continue;
     posts.push({
-      date: String(row[c.date] || "").trim(),
+      date: utcToGmt6Date(String(row[c.date] || "").trim()),
       message: String(row[c.msg] || "").trim(),
       categoria: c.cat >= 0 ? String(row[c.cat] || "").trim().replace(/\s+/g, " ").toUpperCase() : "",
       profile,
