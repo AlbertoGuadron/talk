@@ -35,9 +35,26 @@ export async function POST(req: NextRequest) {
     "/",
   ];
 
+  // Warm up: pre-generate all pages in parallel so the first real visitor
+  // doesn't have to wait for Google Sheets API calls.
+  const host = req.headers.get("host") ?? "talk.digitalinsightsla.com";
+  const proto = host.startsWith("localhost") ? "http" : "https";
+  const baseUrl = `${proto}://${host}`;
+
+  const warmupResults = await Promise.allSettled(
+    pages.map(path =>
+      fetch(`${baseUrl}${path}`, { signal: AbortSignal.timeout(50_000) })
+        .then(r => ({ path, status: r.status }))
+        .catch((err: Error) => ({ path, error: err.message }))
+    )
+  );
+
+  const warmup = warmupResults.map(r => r.status === "fulfilled" ? r.value : r.reason);
+
   return NextResponse.json({
     revalidated: true,
     pages,
+    warmup,
     at: new Date().toISOString(),
   });
 }
