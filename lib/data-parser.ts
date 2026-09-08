@@ -392,44 +392,63 @@ export function buildDashboardData(
     .map((p) => ({ name: p.profile, value: p.publicaciones, network: p.network, fill: color }));
 
   // Top 10 reacciones: aggregate by brand (legacy, kept for compat)
+  // Prefer stable CDN images: Facebook > Instagram > YouTube > Twitter > TikTok (expires fast)
+  const NET_PREF = ["FACEBOOK", "INSTAGRAM", "YOUTUBE", "TWITTER", "LINKEDIN"];
+  function pickStableImg(imgByNet: Record<string, string>): string {
+    for (const net of NET_PREF) {
+      if (imgByNet[net]) return imgByNet[net];
+    }
+    return Object.values(imgByNet)[0] || "";
+  }
+
   const topReacciones: ChartDataPoint[] = (() => {
-    const map: Record<string, { total: number; bestImg: string; bestEng: number }> = {};
+    const map: Record<string, { total: number; imgByNet: Record<string, string> }> = {};
     for (const p of profiles) {
       if (p.engagement <= 0) continue;
-      if (!map[p.profile]) map[p.profile] = { total: 0, bestImg: "", bestEng: 0 };
+      if (!map[p.profile]) map[p.profile] = { total: 0, imgByNet: {} };
       map[p.profile].total += p.engagement;
-      if (p.engagement > map[p.profile].bestEng) {
-        map[p.profile].bestEng = p.engagement;
-        map[p.profile].bestImg = p.imageLink || "";
-      }
+      if (p.imageLink) map[p.profile].imgByNet[p.network] = p.imageLink;
     }
     return Object.entries(map)
       .sort(([, a], [, b]) => b.total - a.total)
       .slice(0, 10)
-      .map(([name, { total, bestImg }]) => ({
-        name, value: total, fill: color, imageLink: bestImg,
+      .map(([name, { total, imgByNet }]) => ({
+        name, value: total, fill: color, imageLink: pickStableImg(imgByNet),
       }));
   })();
 
-  // Carousel: top categories by engagement — use image from top brand per category
+  // Carousel: top categories by engagement — prefer FB/IG image of leading brand over TikTok
   const carouselItems: ChartDataPoint[] = hasCategoria ? (() => {
-    const map: Record<string, { total: number; bestImg: string; bestEng: number; bestBrand: string }> = {};
+    // cat → brand → { total, imgByNet }
+    const catMap: Record<string, Record<string, { total: number; imgByNet: Record<string, string> }>> = {};
     for (const p of profiles) {
       if (p.engagement <= 0) continue;
       const cat = toTitleCase(p.categoria || "Sin Categoría");
-      if (!map[cat]) map[cat] = { total: 0, bestImg: "", bestEng: 0, bestBrand: "" };
-      map[cat].total += p.engagement;
-      if (p.engagement > map[cat].bestEng) {
-        map[cat].bestEng = p.engagement;
-        map[cat].bestImg = p.imageLink || "";
-        map[cat].bestBrand = p.profile;
-      }
+      if (!catMap[cat]) catMap[cat] = {};
+      if (!catMap[cat][p.profile]) catMap[cat][p.profile] = { total: 0, imgByNet: {} };
+      catMap[cat][p.profile].total += p.engagement;
+      if (p.imageLink) catMap[cat][p.profile].imgByNet[p.network] = p.imageLink;
     }
-    return Object.entries(map)
-      .sort(([, a], [, b]) => b.total - a.total)
+    return Object.entries(catMap)
+      .map(([cat, brands]) => {
+        let catTotal = 0;
+        let bestBrandName = "";
+        let bestBrandTotal = 0;
+        let bestBrandImgByNet: Record<string, string> = {};
+        for (const [brand, data] of Object.entries(brands)) {
+          catTotal += data.total;
+          if (data.total > bestBrandTotal) {
+            bestBrandTotal = data.total;
+            bestBrandName = brand;
+            bestBrandImgByNet = data.imgByNet;
+          }
+        }
+        return { cat, catTotal, bestBrandName, img: pickStableImg(bestBrandImgByNet) };
+      })
+      .sort((a, b) => b.catTotal - a.catTotal)
       .slice(0, 10)
-      .map(([name, { total, bestImg, bestBrand }]) => ({
-        name, value: total, fill: color, imageLink: bestImg, brand: bestBrand,
+      .map(({ cat, catTotal, bestBrandName, img }) => ({
+        name: cat, value: catTotal, fill: color, imageLink: img, brand: bestBrandName,
       }));
   })() : [];
 
