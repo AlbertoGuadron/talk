@@ -152,11 +152,9 @@ export async function syncPostImages(
     );
   }
 
-  // ── 3. Delete files from previous month no longer in use ─────────────────
-  const toDelete = [...existingMap.keys()].filter((k) => !usedKeys.has(k));
-  if (toDelete.length > 0) {
-    await supabase.storage.from(BUCKET).remove(toDelete);
-  }
+  // Auto-delete disabled: removing stale files caused blank images when CDN
+  // URLs had already expired and the new top-10 posts couldn't be re-downloaded.
+  // Manual cleanup via Supabase dashboard when needed.
 
   return { posts: updated, stats };
 }

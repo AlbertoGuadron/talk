@@ -392,8 +392,8 @@ export function buildDashboardData(
     .map((p) => ({ name: p.profile, value: p.publicaciones, network: p.network, fill: color }));
 
   // Top 10 reacciones: aggregate by brand (legacy, kept for compat)
-  // Prefer stable CDN images: Facebook > Instagram > YouTube > Twitter > TikTok (expires fast)
-  const NET_PREF = ["FACEBOOK", "INSTAGRAM", "YOUTUBE", "TWITTER", "LINKEDIN"];
+  // TikTok profile images are stable; prefer them over FB/IG which expire more often
+  const NET_PREF = ["TIKTOK", "INSTAGRAM", "FACEBOOK", "YOUTUBE", "TWITTER", "LINKEDIN"];
   function pickStableImg(imgByNet: Record<string, string>): string {
     for (const net of NET_PREF) {
       if (imgByNet[net]) return imgByNet[net];
