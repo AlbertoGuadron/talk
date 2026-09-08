@@ -144,11 +144,11 @@ export async function getTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
   let posts = parsePostsData(postRows, slug, svColOverride);
 
   if (process.env.SUPABASE_URL) {
-    const { syncPostImages } = await import("./image-cache");
-    // Prefix sv- so SV moneytalk/tourismtalk don't collide with GT in Supabase
+    const { syncPostImages, syncProfileImages } = await import("./image-cache");
     const cacheKey = (slug === "moneytalk" || slug === "tourismtalk") ? `sv-${slug}` : slug;
     const result = await syncPostImages(posts, cacheKey);
     posts = result.posts;
+    profiles = await syncProfileImages(profiles, cacheKey);
     console.log(`[image-cache] sv/${slug}:`, result.stats);
   }
 
@@ -184,9 +184,10 @@ export async function getGtTalkData(slug: GtSlug, meta: TalkMeta): Promise<TalkD
   let posts = parsePostsData(postRows, slug as TalkSlug);
 
   if (process.env.SUPABASE_URL) {
-    const { syncPostImages } = await import("./image-cache");
+    const { syncPostImages, syncProfileImages } = await import("./image-cache");
     const result = await syncPostImages(posts, `gt-${slug}`);
     posts = result.posts;
+    profiles = await syncProfileImages(profiles, `gt-${slug}`);
     console.log(`[image-cache] gt/${slug}:`, result.stats);
   }
 
@@ -222,9 +223,10 @@ export async function getHnTalkData(slug: HnSlug, meta: TalkMeta): Promise<TalkD
   let posts = parsePostsData(postRows, slug as TalkSlug);
 
   if (process.env.SUPABASE_URL) {
-    const { syncPostImages } = await import("./image-cache");
+    const { syncPostImages, syncProfileImages } = await import("./image-cache");
     const result = await syncPostImages(posts, `hn-${slug}`);
     posts = result.posts;
+    profiles = await syncProfileImages(profiles, `hn-${slug}`);
     console.log(`[image-cache] hn/${slug}:`, result.stats);
   }
 

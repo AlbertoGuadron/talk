@@ -1,8 +1,9 @@
-import type { PostData } from "@/types";
+import type { PostData, ProfileData } from "@/types";
 import { createClient } from "@supabase/supabase-js";
 
 const BUCKET = "talk-images";
 const PREFIX = "posts";
+const PROFILE_PREFIX = "profiles";
 
 function imageKey(slug: string, messageId: string): string {
   return `${PREFIX}/${slug}/${messageId}.jpg`;
@@ -157,4 +158,68 @@ export async function syncPostImages(
   // Manual cleanup via Supabase dashboard when needed.
 
   return { posts: updated, stats };
+}
+
+// ── Profile image cache ────────────────────────────────────────────────────────
+// FB/IG CDN URLs block hotlinking from third-party domains. We download them
+// server-side (with proper Referer) and re-host on Supabase so the browser
+// can load them without restrictions.
+export async function syncProfileImages(
+  profiles: ProfileData[],
+  slug: string
+): Promise<ProfileData[]> {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return profiles;
+  }
+
+  const supabase = getSupabase();
+
+  // List already-cached profile images for this slug
+  const existingMap = new Map<string, string>();
+  try {
+    const { data: files } = await supabase.storage
+      .from(BUCKET)
+      .list(`${PROFILE_PREFIX}/${slug}`, { limit: 2000 });
+    for (const file of files ?? []) {
+      const path = `${PROFILE_PREFIX}/${slug}/${file.name}`;
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+      existingMap.set(file.name, data.publicUrl);
+    }
+  } catch { /* proceed without cache */ }
+
+  const updated: ProfileData[] = [...profiles];
+
+  await Promise.allSettled(
+    profiles.map(async (profile, idx) => {
+      if (!profile.imageLink) return;
+
+      // Stable key: sanitized profile name + network
+      const keyName = `${profile.profile}-${profile.network}`
+        .replace(/[^a-zA-Z0-9-]/g, "_")
+        .slice(0, 80) + ".jpg";
+      const path = `${PROFILE_PREFIX}/${slug}/${keyName}`;
+
+      // Already cached → reuse
+      const cached = existingMap.get(keyName);
+      if (cached) {
+        updated[idx] = { ...profile, imageLink: cached };
+        return;
+      }
+
+      // Download and upload to Supabase (upsert: true so new URLs replace old ones)
+      const img = await fetchImageAsBuffer(profile.imageLink);
+      if (!img) return;
+
+      const { error } = await supabase.storage
+        .from(BUCKET)
+        .upload(path, img.buffer, { contentType: img.contentType, upsert: true });
+
+      if (error) return;
+
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+      updated[idx] = { ...profile, imageLink: data.publicUrl };
+    })
+  );
+
+  return updated;
 }
