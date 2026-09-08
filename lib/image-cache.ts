@@ -188,10 +188,14 @@ export async function syncProfileImages(
   } catch { /* proceed without cache */ }
 
   const updated: ProfileData[] = [...profiles];
+  const stats = { total: profiles.length, noUrl: 0, cached: 0, downloaded: 0, failed: 0 };
 
   await Promise.allSettled(
     profiles.map(async (profile, idx) => {
-      if (!profile.imageLink) return;
+      if (!profile.imageLink) {
+        stats.noUrl++;
+        return;
+      }
 
       // Stable key: sanitized profile name + network
       const keyName = `${profile.profile}-${profile.network}`
@@ -203,23 +207,34 @@ export async function syncProfileImages(
       const cached = existingMap.get(keyName);
       if (cached) {
         updated[idx] = { ...profile, imageLink: cached };
+        stats.cached++;
         return;
       }
 
       // Download and upload to Supabase (upsert: true so new URLs replace old ones)
       const img = await fetchImageAsBuffer(profile.imageLink);
-      if (!img) return;
+      if (!img) {
+        console.warn(`[profile-cache] Failed to fetch ${slug}: ${profile.profile}/${profile.network} → ${profile.imageLink.slice(0, 100)}`);
+        stats.failed++;
+        return;
+      }
 
       const { error } = await supabase.storage
         .from(BUCKET)
         .upload(path, img.buffer, { contentType: img.contentType, upsert: true });
 
-      if (error) return;
+      if (error) {
+        console.error(`[profile-cache] Upload error ${slug}/${keyName}:`, error.message);
+        stats.failed++;
+        return;
+      }
 
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
       updated[idx] = { ...profile, imageLink: data.publicUrl };
+      stats.downloaded++;
     })
   );
 
+  console.log(`[profile-cache] ${slug}:`, stats);
   return updated;
 }
