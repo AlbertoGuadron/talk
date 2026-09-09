@@ -38,24 +38,30 @@ async function fetchImageAsBuffer(
   url: string
 ): Promise<{ buffer: ArrayBuffer; contentType: string } | null> {
   try {
+    const referer = refererForUrl(url);
+    const headers: Record<string, string> = {
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+      "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
+    };
+    // Only send Referer when it's a known CDN — omitting for unknown sources
+    if (referer !== "https://www.google.com/") {
+      headers["Referer"] = referer;
+    }
     const res = await fetch(url, {
-      signal: AbortSignal.timeout(10000),
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
-        "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
-        Referer: refererForUrl(url),
-        "sec-fetch-dest": "image",
-        "sec-fetch-mode": "no-cors",
-        "sec-fetch-site": "cross-site",
-      },
+      signal: AbortSignal.timeout(15000),
+      headers,
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn(`[image-cache] HTTP ${res.status} fetching: ${url.slice(0, 100)}`);
+      return null;
+    }
     const contentType = res.headers.get("content-type") || "image/jpeg";
     if (!contentType.startsWith("image/")) return null;
     return { buffer: await res.arrayBuffer(), contentType };
-  } catch {
+  } catch (e) {
+    console.warn(`[image-cache] Fetch error: ${(e as Error).message} → ${url.slice(0, 80)}`);
     return null;
   }
 }
