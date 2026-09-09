@@ -30,7 +30,7 @@ function getSupabase() {
 function refererForUrl(url: string): string {
   if (url.includes("fbcdn.net") || url.includes("facebook.com")) return "https://www.facebook.com/";
   if (url.includes("cdninstagram.com") || url.includes("instagram.com")) return "https://www.instagram.com/";
-  if (url.includes("tiktok.com") || url.includes("tiktokcdn.com")) return "https://www.tiktok.com/";
+  if (url.includes("tiktok")) return "https://www.tiktok.com/";
   return "https://www.google.com/";
 }
 
