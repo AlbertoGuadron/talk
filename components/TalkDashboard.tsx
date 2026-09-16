@@ -227,7 +227,7 @@ export default function TalkDashboard({ data, config }: Props) {
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
-            { label: "Periodo analizado", value: "Mes calendario" },
+            { label: "Periodo analizado", value: "Quincena de mes" },
             { label: "Fuentes", value: "Perfiles oficiales y públicos de las marcas" },
             { label: "Plataformas", value: "Facebook, Instagram, TikTok y otras según disponibilidad" },
             { label: "Indicadores", value: "Publicaciones, seguidores, reacciones, engagement y efectividad por contenido" },

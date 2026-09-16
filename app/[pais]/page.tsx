@@ -81,7 +81,7 @@ export default async function CountryPage({ params }: Props) {
             {[
               { label: "Talks activos", value: String(talks.length) },
               { label: "Disponible", value: "24/7" },
-              { label: "Actualización", value: "Semanal" },
+              { label: "Actualización", value: "Quincenal" },
             ].map((s) => (
               <div key={s.label} className="glass rounded-full px-5 py-2.5 flex items-center gap-2.5">
                 <div className="text-left">

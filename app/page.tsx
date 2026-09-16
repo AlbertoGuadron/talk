@@ -44,7 +44,7 @@ export default function Home() {
           <div className="flex flex-wrap gap-2 justify-center">
             {[
               { label: "Países", value: "3" },
-              { label: "Actualización", value: "Semanal" },
+              { label: "Actualización", value: "Quincenal" },
               { label: "Disponible", value: "24/7" },
             ].map((s) => (
               <div key={s.label} className="glass rounded-full px-4 py-2 flex items-center gap-2">
