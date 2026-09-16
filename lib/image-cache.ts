@@ -66,6 +66,14 @@ async function fetchImageAsBuffer(
   }
 }
 
+function isConflictError(err: { message: string }): boolean {
+  return (
+    err.message === "The resource already exists" ||
+    err.message.includes("duplicate key") ||
+    err.message.includes("unique constraint")
+  );
+}
+
 export interface SyncStats {
   total: number;
   downloaded: number;
@@ -142,7 +150,7 @@ export async function syncPostImages(
               upsert: false,
             });
 
-          if (error && error.message !== "The resource already exists") {
+          if (error && !isConflictError(error)) {
             console.error(`[image-cache] Supabase upload error for ${slug}:`, error.message);
             stats.failed++;
             return;
@@ -229,7 +237,7 @@ export async function syncProfileImages(
         .from(BUCKET)
         .upload(path, img.buffer, { contentType: img.contentType, upsert: true });
 
-      if (error) {
+      if (error && !isConflictError(error)) {
         console.error(`[profile-cache] Upload error ${slug}/${keyName}:`, error.message);
         stats.failed++;
         return;
