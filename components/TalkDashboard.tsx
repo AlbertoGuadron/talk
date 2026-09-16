@@ -76,7 +76,10 @@ export default function TalkDashboard({ data, config }: Props) {
 
   const hasCategoria = config.hasCategoria ?? false;
   const engagementRateStr = `${stats.engagementRate.toFixed(2)}%`;
-  const hallazgos = computeHallazgos(profiles, hasCategoria);
+  const hallazgos: [string, string, string] =
+    meta.dato1 && meta.dato2 && meta.dato3
+      ? [meta.dato1, meta.dato2, meta.dato3]
+      : computeHallazgos(profiles, hasCategoria);
 
   return (
     <div className="pt-28 pb-16 px-4 max-w-7xl mx-auto">

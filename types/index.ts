@@ -18,6 +18,9 @@ export interface TalkMeta {
   analisis: string;
   analisis2?: string;
   analisis3?: string;
+  dato1?: string;
+  dato2?: string;
+  dato3?: string;
 }
 
 export interface ProfileData {

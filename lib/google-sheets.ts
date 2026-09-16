@@ -71,6 +71,9 @@ function parseConfigRows(rows: unknown[][]): TalkMeta {
     analisis: map["analisis"] || "",
     analisis2: map["analisis 2"] || "",
     analisis3: map["analisis 3"] || "",
+    dato1: map["dato 1"] || "",
+    dato2: map["dato 2"] || "",
+    dato3: map["dato 3"] || "",
   };
 }
 
