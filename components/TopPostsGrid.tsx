@@ -34,7 +34,13 @@ function fmt(v: number): string {
 
 function formatDate(dateStr: string): string {
   try {
-    const d = new Date(dateStr);
+    // "YYYY-MM-DD" strings are parsed as UTC midnight by new Date(), which shifts
+    // the day backwards in negative-offset timezones (GMT-6 → shows the day before).
+    // Parse components directly to create a LOCAL date instead.
+    const m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const d = m
+      ? new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]))
+      : new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
     return d.toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" });
   } catch {
