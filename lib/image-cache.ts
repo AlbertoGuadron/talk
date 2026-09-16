@@ -92,6 +92,16 @@ export async function syncPostImages(
     return { posts, stats: emptyStats };
   }
 
+  // Only sync images for the top posts by engagement — those are the only ones displayed.
+  // This prevents build timeouts on large sheets (e.g. gt/markettalk has 594 posts).
+  const TOP_SYNC_LIMIT = 50;
+  const indexed = posts.map((p, i) => ({ p, i }));
+  const topSlice = indexed
+    .sort((a, b) => b.p.engagement - a.p.engagement)
+    .slice(0, TOP_SYNC_LIMIT);
+  const postsToSync = topSlice.map(x => x.p);
+  const originalIndices = topSlice.map(x => x.i);
+
   const supabase = getSupabase();
 
   // ── 1. List existing files in this slug's folder ──────────────────────────
@@ -108,18 +118,17 @@ export async function syncPostImages(
     }
   } catch { /* proceed without existing cache */ }
 
-  // ── 2. Process each post (10 concurrent) ─────────────────────────────────
+  // ── 2. Process top posts only (10 concurrent) ────────────────────────────
   const CONCURRENCY = 10;
   const updated: PostData[] = [...posts];
-  const usedKeys = new Set<string>();
-  const stats: SyncStats = { total: posts.length, downloaded: 0, cached: 0, failed: 0, noUrl: 0 };
+  const stats: SyncStats = { total: postsToSync.length, downloaded: 0, cached: 0, failed: 0, noUrl: 0 };
 
-  for (let i = 0; i < posts.length; i += CONCURRENCY) {
+  for (let i = 0; i < postsToSync.length; i += CONCURRENCY) {
     await Promise.allSettled(
-      posts.slice(i, i + CONCURRENCY).map(async (post, idx) => {
-        const globalIdx = i + idx;
+      postsToSync.slice(i, i + CONCURRENCY).map(async (post, idx) => {
+        const sliceIdx = i + idx;
+        const originalIdx = originalIndices[sliceIdx];
         const key = imageKey(slug, extractMessageId(post));
-        usedKeys.add(key);
 
         if (!post.imageLink) {
           stats.noUrl++;
@@ -129,7 +138,7 @@ export async function syncPostImages(
         // ✅ Already cached in Supabase → reuse, skip download
         const cached = existingMap.get(key);
         if (cached) {
-          updated[globalIdx] = { ...post, imageLink: cached };
+          updated[originalIdx] = { ...post, imageLink: cached };
           stats.cached++;
           return;
         }
@@ -157,7 +166,7 @@ export async function syncPostImages(
           }
 
           const { data } = supabase.storage.from(BUCKET).getPublicUrl(key);
-          updated[globalIdx] = { ...post, imageLink: data.publicUrl };
+          updated[originalIdx] = { ...post, imageLink: data.publicUrl };
           stats.downloaded++;
         } catch (e) {
           console.error(`[image-cache] Upload error for ${slug}:`, e);
