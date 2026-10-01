@@ -20,6 +20,36 @@ function fmt(v: number): string {
   return String(v);
 }
 
+type NombreFn = (n: string) => string;
+
+// Picks a variant deterministically based on a seed derived from the top brand's name.
+// Same data → same result; different talks → different phrasing.
+function pick(variants: NombreFn[], seed: string): NombreFn {
+  const n = seed.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return variants[n % variants.length];
+}
+
+const FRASES_ACTIVIDAD: NombreFn[] = [
+  n => `${n} lideró en publicaciones, manteniendo la presencia más activa en redes durante el período.`,
+  n => `El mayor volumen de contenido correspondió a ${n}, que encabezó la actividad del período.`,
+  n => `${n} marcó el ritmo con más publicaciones que cualquier otra marca en la quincena.`,
+  n => `Nadie publicó más que ${n}: registró la actividad más alta en contenido del período.`,
+];
+
+const FRASES_IMPACTO: NombreFn[] = [
+  n => `${n} concentró la mayor respuesta de audiencia, acumulando las reacciones más altas del período.`,
+  n => `La audiencia reaccionó más a ${n}, que lideró en interacción total durante la quincena.`,
+  n => `${n} fue la marca que más interés generó, capturando el mayor volumen de reacciones.`,
+  n => `En impacto real, ${n} se posicionó primero: más reacciones que el resto del mercado.`,
+];
+
+const FRASES_EFICIENCIA: NombreFn[] = [
+  n => `${n} sobresalió en eficiencia, logrando el mejor engagement por seguidor del período.`,
+  n => `Con el mejor ratio reacciones/audiencia, ${n} fue la marca más eficiente de la quincena.`,
+  n => `${n} demostró la mayor efectividad relativa, generando más impacto por seguidor que el resto.`,
+  n => `La relación impacto/audiencia favoreció a ${n}, que aprovechó mejor su base de seguidores.`,
+];
+
 function computeHallazgos(profiles: ProfileData[], hasCategoria: boolean): [string, string, string] {
   if (hasCategoria && profiles.some(p => p.categoria)) {
     const cats = new Map<string, { posts: number; reactions: number; followers: number }>();
@@ -33,16 +63,19 @@ function computeHallazgos(profiles: ProfileData[], hasCategoria: boolean): [stri
       });
     }
     const arr = Array.from(cats.entries()).map(([name, v]) => ({ name, ...v }));
-    const byPosts = [...arr].sort((a, b) => b.posts - a.posts);
+    const byPosts     = [...arr].sort((a, b) => b.posts - a.posts);
     const byReactions = [...arr].sort((a, b) => b.reactions - a.reactions);
-    const byEff = [...arr]
+    const byEff       = [...arr]
       .filter(c => c.followers > 0)
       .sort((a, b) => b.reactions / b.followers - a.reactions / a.followers);
 
+    const n1 = byPosts[0]?.name ?? "—";
+    const n2 = byReactions[0]?.name ?? "—";
+    const n3 = byEff[0]?.name ?? "—";
     return [
-      `${byPosts[0]?.name ?? "—"} dominó la actividad con el mayor volumen de publicaciones del período.`,
-      `${byReactions[0]?.name ?? "—"} lideró el impacto con las mayores reacciones generadas.`,
-      `${byEff[0]?.name ?? "—"} destacó por su eficiencia, logrando el mejor engagement relativo a su audiencia.`,
+      pick(FRASES_ACTIVIDAD,  n1)(n1),
+      pick(FRASES_IMPACTO,    n2)(n2),
+      pick(FRASES_EFICIENCIA, n3)(n3),
     ];
   }
 
@@ -58,10 +91,13 @@ function computeHallazgos(profiles: ProfileData[], hasCategoria: boolean): [stri
       return eB - eA;
     });
 
+  const n1 = byPosts[0]?.profile ?? "—";
+  const n2 = byReactions[0]?.profile ?? "—";
+  const n3 = byEff[0]?.profile ?? "—";
   return [
-    `${byPosts[0]?.profile ?? "—"} dominó la actividad con el mayor volumen de publicaciones.`,
-    `${byReactions[0]?.profile ?? "—"} generó el mayor impacto en reacciones durante el período.`,
-    `${byEff[0]?.profile ?? "—"} destacó por su eficiencia en engagement relativo a su audiencia.`,
+    pick(FRASES_ACTIVIDAD,  n1)(n1),
+    pick(FRASES_IMPACTO,    n2)(n2),
+    pick(FRASES_EFICIENCIA, n3)(n3),
   ];
 }
 
