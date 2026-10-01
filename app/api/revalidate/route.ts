@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import type { TalkSlug } from "@/types";
 
-// Allow up to 60 s for image downloads (Vercel Pro / Hobby max)
-export const maxDuration = 60;
+// Allow up to 120 s — warm-up does two rounds with a 35 s wait between them
+export const maxDuration = 120;
 
 const SLUGS: TalkSlug[] = [
   "foodtalk", "housetalk", "markettalk",
@@ -45,6 +45,18 @@ export async function POST(req: NextRequest) {
   const proto = host.startsWith("localhost") ? "http" : "https";
   const baseUrl = `${proto}://${host}`;
 
+  // Round 1: trigger ISR regeneration for all pages (returns stale content immediately)
+  await Promise.allSettled(
+    pages.map(path =>
+      fetch(`${baseUrl}${path}`, { signal: AbortSignal.timeout(10_000) })
+        .catch(() => null)
+    )
+  );
+
+  // Wait for background regenerations to complete (GT/HN take ~20-35 s)
+  await new Promise(r => setTimeout(r, 35_000));
+
+  // Round 2: fetch again — should now get freshly generated content
   const warmupResults = await Promise.allSettled(
     pages.map(path =>
       fetch(`${baseUrl}${path}`, { signal: AbortSignal.timeout(50_000) })

@@ -7,6 +7,7 @@ import type { TalkSlug } from "@/types";
 import type { CountryCode } from "@/lib/countries-config";
 
 export const revalidate = false;
+export const maxDuration = 60;
 
 // Pre-build all country/talk combinations at deploy time so pages are static
 export async function generateStaticParams() {
