@@ -300,7 +300,7 @@ export default function TalkDashboard({ data, config }: Props) {
             boxShadow: `0 0 24px ${config.color}40`,
           }}
         >
-          Agende una demo →
+          Agenda una reunión →
         </Link>
       </div>
 

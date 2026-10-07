@@ -227,7 +227,7 @@ export default async function CountryPage({ params }: Props) {
                 boxShadow: "0 0 32px rgba(99,102,241,0.4)",
               }}
             >
-              Agende una demo
+              Agenda una reunión
             </Link>
             <Link
               href={pais === "sv" ? `/${talks[0]?.slug}` : `/${pais}/${talks[0]?.slug}`}

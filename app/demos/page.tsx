@@ -222,7 +222,7 @@ export default async function DemosPage() {
             color: "white",
           }}
         >
-          Agende una demo →
+          Agenda una reunión →
         </Link>
       </div>
 
