@@ -103,6 +103,15 @@ export default function Navbar() {
                 Inicio
               </Link>
 
+              <Link
+                href="/demos"
+                className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 ${
+                  pathname.startsWith("/demos") ? "text-white bg-white/10" : "text-slate-300 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                Demos
+              </Link>
+
               {/* Talks dropdown */}
               {currentTalks.length > 0 && (
                 <div className="relative">
@@ -261,6 +270,16 @@ export default function Navbar() {
                 }`}
               >
                 Inicio
+              </Link>
+
+              <Link
+                href="/demos"
+                onClick={close}
+                className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                  pathname.startsWith("/demos") ? "text-white bg-white/10" : "text-slate-300 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                Demos
               </Link>
 
               {/* Talks en móvil */}

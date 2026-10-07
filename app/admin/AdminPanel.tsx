@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { TalkConfig } from "@/types";
 
 interface Props {
@@ -13,6 +13,53 @@ interface Props {
 export default function AdminPanel({ talks, sheetId, isConfigured, revalidateToken }: Props) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [uploadMessage, setUploadMessage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleUploadDemo(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      setUploadStatus("error");
+      setUploadMessage("❌ Solo se permiten archivos PDF.");
+      return;
+    }
+
+    setUploadStatus("loading");
+    setUploadMessage(`Subiendo "${file.name}"…`);
+
+    try {
+      // Step 1: Get signed upload URL
+      const urlRes = await fetch(
+        `/api/demos/upload-url?filename=${encodeURIComponent(file.name)}`,
+        { headers: { "x-revalidate-token": revalidateToken } }
+      );
+      if (!urlRes.ok) {
+        const body = await urlRes.json().catch(() => ({}));
+        throw new Error(body?.error ?? `Error ${urlRes.status}`);
+      }
+      const { signedUrl } = await urlRes.json();
+
+      // Step 2: Upload directly to Supabase Storage
+      const uploadRes = await fetch(signedUrl, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": "application/pdf" },
+      });
+      if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status})`);
+
+      setUploadStatus("success");
+      setUploadMessage(`✅ "${file.name}" subido correctamente. Aparecerá en /demos en menos de 1 minuto.`);
+    } catch (err) {
+      setUploadStatus("error");
+      setUploadMessage(`❌ ${(err as Error).message}`);
+    } finally {
+      // Reset input so the same file can be re-uploaded if needed
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
 
   async function handlePublish() {
     setStatus("loading");
@@ -139,6 +186,53 @@ export default function AdminPanel({ talks, sheetId, isConfigured, revalidateTok
             </p>
           </li>
         </ol>
+      </div>
+
+      {/* Demos upload */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
+        <h2 className="font-bold text-gray-800 mb-1 flex items-center gap-2">
+          <span>📁</span> Subir demo (PDF)
+        </h2>
+        <p className="text-sm text-gray-500 mb-4">
+          El archivo aparecerá automáticamente en{" "}
+          <a href="/demos" target="_blank" className="underline text-gray-700 font-medium">/demos</a>{" "}
+          tras subirse. Usa el formato: <code className="bg-gray-100 px-1 rounded text-xs">TALK PAÍS MES DEMO.pdf</code>
+          {" "}(ej. <em>FOODTALK HND SEPTIEMBRE DEMO.pdf</em>).
+        </p>
+        <label
+          className={`flex items-center justify-center gap-3 w-full border-2 border-dashed rounded-xl px-6 py-8 cursor-pointer transition-colors ${
+            uploadStatus === "loading"
+              ? "border-gray-200 bg-gray-50 cursor-not-allowed"
+              : "border-gray-200 hover:border-gray-400 hover:bg-gray-50"
+          }`}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,application/pdf"
+            className="sr-only"
+            disabled={uploadStatus === "loading"}
+            onChange={handleUploadDemo}
+          />
+          {uploadStatus === "loading" ? (
+            <svg className="animate-spin w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+          )}
+          <span className="text-sm text-gray-500 font-medium">
+            {uploadStatus === "loading" ? "Subiendo…" : "Seleccionar PDF para subir"}
+          </span>
+        </label>
+        {uploadMessage && (
+          <p className={`mt-3 text-sm font-medium ${uploadStatus === "error" ? "text-red-600" : "text-gray-700"}`}>
+            {uploadMessage}
+          </p>
+        )}
       </div>
 
       {/* Publish button */}
