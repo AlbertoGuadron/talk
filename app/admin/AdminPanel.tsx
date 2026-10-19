@@ -71,7 +71,7 @@ export default function AdminPanel({ talks, sheetId, isConfigured, revalidateTok
       });
       if (res.ok) {
         setStatus("success");
-        setMessage("✅ Caché invalidado. Abre cada Talk y recarga la página para ver los datos nuevos.");
+        setMessage("✅ Publicado. Abre cada Talk (SV, GT, HND) y recarga la página. Si aún ves datos viejos, espera 1 minuto y vuelve a recargar.");
       } else {
         const body = await res.json().catch(() => ({}));
         setStatus("error");
@@ -254,7 +254,7 @@ export default function AdminPanel({ talks, sheetId, isConfigured, revalidateTok
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Publicando…
+              Publicando (1-2 min)…
             </>
           ) : (
             "🚀 Publicar cambios"

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import type { TalkSlug } from "@/types";
 
-// Allow up to 120 s — warm-up does two rounds with a 35 s wait between them
-export const maxDuration = 120;
+// Allow up to 300 s — staggered warm-up for SV, GT, HN avoids Google Sheets rate limits
+export const maxDuration = 300;
 
 const SLUGS: TalkSlug[] = [
   "foodtalk", "housetalk", "markettalk",
@@ -33,35 +33,48 @@ export async function POST(req: NextRequest) {
   revalidatePath("/gt", "page");
   revalidatePath("/hn", "page");
 
-  const pages = [
-    "/", "/sv", "/gt", "/hn",
-    ...SLUGS.map(s => `/${s}`),
-    ...["gt", "hn"].flatMap(p => SLUGS.map(s => `/${p}/${s}`)),
-  ];
-
-  // Warm up: pre-generate all pages in parallel so the first real visitor
-  // doesn't have to wait for Google Sheets API calls.
   const host = req.headers.get("host") ?? "talk.digitalinsightsla.com";
   const proto = host.startsWith("localhost") ? "http" : "https";
   const baseUrl = `${proto}://${host}`;
 
-  // Round 1: trigger ISR regeneration for all pages (returns stale content immediately)
-  await Promise.allSettled(
-    pages.map(path =>
-      fetch(`${baseUrl}${path}`, { signal: AbortSignal.timeout(10_000) })
-        .catch(() => null)
-    )
-  );
+  const warm = (paths: string[], timeoutMs = 10_000) =>
+    Promise.allSettled(
+      paths.map(p =>
+        fetch(`${baseUrl}${p}`, { signal: AbortSignal.timeout(timeoutMs) })
+          .catch(() => null)
+      )
+    );
 
-  // Wait for background regenerations to complete (GT/HN take ~20-35 s)
-  await new Promise(r => setTimeout(r, 35_000));
+  const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-  // Round 2: fetch again — should now get freshly generated content
+  // Stagger warm-up by country to avoid exceeding Google Sheets quota
+  // (60 read req/min per service account; each page makes ~3 Sheets calls).
+  // Firing all 22 pages at once = ~66 simultaneous calls → 429 errors → 15 s retries.
+  // Staggering by 15 s keeps each burst under the quota window.
+  const svPages = SLUGS.map(s => `/${s}`);
+  const gtPages = SLUGS.map(s => `/gt/${s}`);
+  const hnPages = SLUGS.map(s => `/hn/${s}`);
+
+  // Round 1 – SV (trigger ISR, no Sheets conflicts yet)
+  await warm(["/", "/sv", ...svPages]);
+  await wait(15_000);
+
+  // Round 1 – GT (quota window clear after 15 s)
+  await warm(["/gt", ...gtPages]);
+  await wait(15_000);
+
+  // Round 1 – HN (quota window clear after another 15 s)
+  await warm(["/hn", ...hnPages]);
+
+  // Wait for GT and HN background regenerations to finish (~40 s)
+  await wait(40_000);
+
+  // Round 2 – verify GT and HN have fresh content
   const warmupResults = await Promise.allSettled(
-    pages.map(path =>
-      fetch(`${baseUrl}${path}`, { signal: AbortSignal.timeout(50_000) })
-        .then(r => ({ path, status: r.status }))
-        .catch((err: Error) => ({ path, error: err.message }))
+    [...gtPages, ...hnPages].map(p =>
+      fetch(`${baseUrl}${p}`, { signal: AbortSignal.timeout(30_000) })
+        .then(r => ({ path: p, status: r.status }))
+        .catch((err: Error) => ({ path: p, error: err.message }))
     )
   );
 
@@ -69,7 +82,6 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     revalidated: true,
-    pages,
     warmup,
     at: new Date().toISOString(),
   });
