@@ -17,21 +17,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // SV pages: /foodtalk, /housetalk, …
+  // Legacy SV pages: /foodtalk, /housetalk, … (static routes)
   for (const slug of SLUGS) {
-    revalidatePath(`/${slug}`, "page");
+    revalidatePath(`/${slug}`);
   }
-  // GT + HN pages: /gt/foodtalk, /hn/foodtalk, …
-  for (const pais of ["gt", "hn"]) {
+  // Country pages /sv/foodtalk, /gt/foodtalk, /hn/foodtalk, … all come from the
+  // dynamic route app/[pais]/[talk]. A literal path combined with type "page"
+  // never matches a dynamic route, so those pages were never refreshed.
+  // Revalidate the route pattern (all 18 pages) plus each literal URL.
+  revalidatePath("/[pais]/[talk]", "page");
+  revalidatePath("/[pais]", "page");
+  for (const pais of PAISES) {
+    revalidatePath(`/${pais}`);
     for (const slug of SLUGS) {
-      revalidatePath(`/${pais}/${slug}`, "page");
+      revalidatePath(`/${pais}/${slug}`);
     }
   }
   revalidatePath("/");
-
-  revalidatePath("/sv", "page");
-  revalidatePath("/gt", "page");
-  revalidatePath("/hn", "page");
 
   const host = req.headers.get("host") ?? "talk.digitalinsightsla.com";
   const proto = host.startsWith("localhost") ? "http" : "https";
@@ -51,7 +53,7 @@ export async function POST(req: NextRequest) {
   // (60 read req/min per service account; each page makes ~3 Sheets calls).
   // Firing all 22 pages at once = ~66 simultaneous calls → 429 errors → 15 s retries.
   // Staggering by 15 s keeps each burst under the quota window.
-  const svPages = SLUGS.map(s => `/${s}`);
+  const svPages = [...SLUGS.map(s => `/${s}`), ...SLUGS.map(s => `/sv/${s}`)];
   const gtPages = SLUGS.map(s => `/gt/${s}`);
   const hnPages = SLUGS.map(s => `/hn/${s}`);
 
@@ -71,7 +73,7 @@ export async function POST(req: NextRequest) {
 
   // Round 2 – verify GT and HN have fresh content
   const warmupResults = await Promise.allSettled(
-    [...gtPages, ...hnPages].map(p =>
+    [...svPages, ...gtPages, ...hnPages].map(p =>
       fetch(`${baseUrl}${p}`, { signal: AbortSignal.timeout(30_000) })
         .then(r => ({ path: p, status: r.status }))
         .catch((err: Error) => ({ path: p, error: err.message }))
