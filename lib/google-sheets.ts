@@ -127,7 +127,7 @@ export async function getTalkData(slug: TalkSlug): Promise<TalkDashboardData> {
   const [dataRows, configRows, postRows] = await Promise.all([
     getSheetValues(spreadsheetId, `${tabs.datos}!A1:P500`),
     getSheetValues(spreadsheetId, `${tabs.config}!A1:B20`),
-    getSheetValues(postsSpreadsheetId, `${tabs.publicaciones}!A1:O10000`).catch((err: Error) => {
+    getSheetValues(postsSpreadsheetId, `${tabs.publicaciones}!A1:O20000`).catch((err: Error) => {
       console.warn(`[sv/${slug}] publicaciones fetch failed (tab: ${tabs.publicaciones}):`, err.message);
       return [] as unknown[][];
     }),
@@ -168,7 +168,7 @@ export async function getGtTalkData(slug: GtSlug, meta: TalkMeta): Promise<TalkD
   const [dataRows, configRows, postRows] = await Promise.all([
     getSheetValues(spreadsheetId, `${tabs.datos}!A1:P500`),
     getSheetValues(spreadsheetId, `${tabs.config}!A1:B20`).catch(() => [] as unknown[][]),
-    getSheetValues(postsSpreadsheetId, `${tabs.publicaciones}!A1:P10000`).catch(() => [] as unknown[][]),
+    getSheetValues(postsSpreadsheetId, `${tabs.publicaciones}!A1:P20000`).catch(() => [] as unknown[][]),
   ]);
 
   const configMeta = configRows.length > 1 ? parseConfigRows(configRows) : null;
@@ -207,7 +207,7 @@ export async function getHnTalkData(slug: HnSlug, meta: TalkMeta): Promise<TalkD
   const [dataRows, configRows, postRows] = await Promise.all([
     getSheetValues(spreadsheetId, `${tabs.datos}!A1:P500`),
     getSheetValues(spreadsheetId, `${tabs.config}!A1:B20`).catch(() => [] as unknown[][]),
-    getSheetValues(postsSpreadsheetId, `${tabs.publicaciones}!A1:O10000`).catch(() => [] as unknown[][]),
+    getSheetValues(postsSpreadsheetId, `${tabs.publicaciones}!A1:O20000`).catch(() => [] as unknown[][]),
   ]);
 
   const configMeta = configRows.length > 1 ? parseConfigRows(configRows) : null;
