@@ -7,9 +7,43 @@ import Footer from "@/components/Footer";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
+const SITE_URL = "https://talk.digitalinsightsla.com";
+
 export const metadata: Metadata = {
-  title: "TALK by Digital Insights",
-  description: "La plataforma de real-time market research que analiza tendencias, conversación y comportamiento digital para guiar a tu marca con datos actualizados.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "TALK Digital Insights – Rankings de marcas en redes sociales",
+    template: "%s | TALK Digital Insights",
+  },
+  description:
+    "Plataforma de real-time market research para El Salvador, Guatemala y Honduras. Rankings quincenales de publicaciones, seguidores y engagement de las principales marcas en Facebook, Instagram y TikTok.",
+  keywords: [
+    "ranking marcas redes sociales",
+    "market research centroamerica",
+    "social media analytics el salvador",
+    "social media analytics guatemala",
+    "social media analytics honduras",
+    "foodtalk housetalk markettalk retailtalk",
+  ],
+  authors: [{ name: "Digital Insights", url: "https://www.digitalinsightsla.com" }],
+  creator: "Digital Insights",
+  openGraph: {
+    type: "website",
+    siteName: "TALK Digital Insights",
+    locale: "es_SV",
+    images: [{ url: "/galeria/logotalk.png", alt: "TALK Digital Insights" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    creator: "@DigitalInsights",
+    images: ["/galeria/logotalk.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  alternates: { canonical: SITE_URL },
 };
 
 export default function RootLayout({

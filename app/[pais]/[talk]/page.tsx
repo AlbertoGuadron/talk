@@ -1,13 +1,22 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCountryInfo, COUNTRIES } from "@/lib/countries-config";
 import { getCountryTalkData } from "@/lib/get-country-data";
 import { getTalkConfig } from "@/lib/talks-config";
+import { getTalkMetadata } from "@/lib/seo";
 import TalkDashboard from "@/components/TalkDashboard";
 import type { TalkSlug } from "@/types";
 import type { CountryCode } from "@/lib/countries-config";
 
 export const revalidate = false;
 export const maxDuration = 60;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { pais, talk } = await params;
+  const country = getCountryInfo(pais);
+  if (!country) return {};
+  return getTalkMetadata(talk as TalkSlug, pais as CountryCode);
+}
 
 // Pre-build all country/talk combinations at deploy time so pages are static
 export async function generateStaticParams() {

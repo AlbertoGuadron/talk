@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getCountryInfo, getCountryTalks, COUNTRIES } from "@/lib/countries-config";
+import { getCountryMetadata } from "@/lib/seo";
 import NetworkCanvas from "@/components/NetworkCanvas";
 import TalkCard from "@/components/ui/TalkCard";
+import type { CountryCode } from "@/lib/countries-config";
 
 export const revalidate = false;
 
@@ -14,6 +17,13 @@ export async function generateStaticParams() {
 
 interface Props {
   params: Promise<{ pais: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { pais } = await params;
+  const country = getCountryInfo(pais);
+  if (!country) return {};
+  return getCountryMetadata(pais as CountryCode);
 }
 
 export default async function CountryPage({ params }: Props) {
